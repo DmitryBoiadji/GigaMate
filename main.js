@@ -55,6 +55,9 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 400,
         height: 400,
+        titleBarStyle: 'hidden',
+        titleBarOverlay: false,
+
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
@@ -78,7 +81,7 @@ app.whenReady().then(() => {
     if(initialBrightness){
         setBrightness(initialBrightness);
     }
-    
+
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow()

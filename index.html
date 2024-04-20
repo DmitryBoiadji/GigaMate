@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Gigabite M32Q control</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-
-
-
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
+    <style>
+        body {
+            -webkit-user-select: none;
+        }
+    </style>
 </head>
 <body>
-
 <h1>Gigabite M32Q settings</h1>
 <div class="slidecontainer">
     <h2>Brightness</h2>
@@ -19,14 +20,12 @@
 
 
 <script>
-    const { ipcRenderer } = require('electron');
+    const {ipcRenderer} = require('electron');
     var brightness = document.getElementById('brightness');
-    brightness.addEventListener('input', function() {
-        ipcRenderer.send('brightness-change',  this.value);
+    brightness.addEventListener('input', function () {
+        ipcRenderer.send('brightness-change', this.value);
     });
 </script>
-
-
 
 
 </body>
