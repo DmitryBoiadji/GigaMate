@@ -4,18 +4,30 @@
     <meta charset="UTF-8">
     <title>Gigabite M32Q control</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+
+
+
 </head>
 <body>
-<h1>Hello World!</h1>
-<p>
-    We are using Node.js <span id="node-version"></span>,
-    Chromium <span id="chrome-version"></span>,
-    and Electron <span id="electron-version"></span>.
-</p>
+
+<h1>Gigabite M32Q settings</h1>
 <div class="slidecontainer">
-    <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+    <h2>Brightness</h2>
+    <input type="range" min="1" max="100" value="50" class="slider" id="brightness">
     <span id="range-value"></span>
 </div>
+
+
+<script>
+    const { ipcRenderer } = require('electron');
+    var brightness = document.getElementById('brightness');
+    brightness.addEventListener('input', function() {
+        ipcRenderer.send('brightness-change',  this.value);
+    });
+</script>
+
+
+
 
 </body>
 </html>
