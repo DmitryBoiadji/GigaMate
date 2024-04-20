@@ -4,8 +4,41 @@ const { exec } = require("child_process");
 const Store = require('electron-store');
 let tray = null
 const store = new Store();
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const expressApp = express();
+// parse application/x-www-form-urlencoded
+expressApp.use(bodyParser.urlencoded({ extended: false }))
+
+expressApp.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
 
 
+expressApp.post("/monitor-settings", (req, res, next) => {
+
+    console.log(req.body)
+     const brightness = req.body.brightness;
+    setBrightness(brightness);
+
+     res.json({"receivedMessage": brightness});
+});
+
+function setBrightness(brightness) {
+    exec("~/go/bin/gbmonctl -prop brightness -val " + brightness, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            store.set('brightness', parseInt(brightness));
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+    });
+}
 
 function createTray(){
     let tray = new Tray(path.join(__dirname, 'images/logo.png'))
@@ -33,20 +66,9 @@ function createWindow () {
 
     ipcMain.on('brightness-change', (event, arg) => {
         console.log(arg);
-
-        exec("~/go/bin/gbmonctl -prop brightness -val " + arg, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                store.set('brightness', parseInt(arg));
-                console.log(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
-        });
+        setBrightness(arg);
     });
+
 }
 
 app.whenReady().then(() => {
