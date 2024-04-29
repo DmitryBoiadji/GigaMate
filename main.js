@@ -26,6 +26,7 @@ const mb = menubar({
 });
 
 mb.on('ready', () => {
+
     ipcMain.on('brightness-change', (event, arg) => {
         setBrightness(arg);
     });
@@ -33,23 +34,26 @@ mb.on('ready', () => {
         mb.tray.popUpContextMenu(contextMenu);
     });
 
+    setShortcuts();
+    app.setLoginItemSettings({
+        openAtLogin: false,
+        openAsHidden: true
+    });
+
+});
+
+function setShortcuts() {
+    // TODO move shortcuts to settings
     globalShortcut.register('Alt+CommandOrControl+Shift+=', () => {
         setBrightness(store.get('brightness') + 10);
     });
     globalShortcut.register('Alt+CommandOrControl+Shift+-', () => {
         setBrightness(store.get('brightness') - 10);
     });
-
-    app.setLoginItemSettings({
-        openAtLogin: true,
-        openAsHidden: true
-    });
-
-});
-
+}
 
 function setBrightness(brightness) {
-    setProperty("brightness", 0, brightness, false);
+    setProperty("brightness", brightness);
 }
 
 // Listener for incoming requests from home assistant
@@ -62,7 +66,7 @@ expressApp.listen(3000, () => {
 expressApp.post("/monitor-settings", (req, res, next) => {
 
     console.log(req.body)
-    const brightness = req.body.brightness;
+    let brightness = req.body.brightness;
     setBrightness(brightness);
 
     res.json({"receivedMessage": brightness});
@@ -79,7 +83,7 @@ expressApp.post("/monitor-settings", (req, res, next) => {
 });
 
 
-if(debug){
+if (debug) {
     mb.on('after-create-window', devMode)
 }
 
@@ -96,13 +100,13 @@ if (!devInfo) {
 const dev = new HID.HID(devInfo.path);
 
 const properties = {
-    // in process
+    // percent 0-100
     "brightness": 0x10,
-    // in process
+    // percent 0-100
     "contrast": 0x12,
     // from 0 to 10
     "sharpness": 0x87,
-    // in process
+    // percent 0-100
     "volume": 0x62,
     // Blue light reduction. 0 means no reduction
     "low-blue-light": 0xe00b,
@@ -112,38 +116,38 @@ const properties = {
     "colour-mode": 0xe003,
     // Red value -- only works if colour-mode is set to 3
     "rgb-red": 0xe004,
-    //Green value -- only works if colour-mode is set to 3
+    // Green value -- only works if colour-mode is set to 3
     "rgb-green": 0xe005,
-    //Blue value -- only works if colour-mode is set to 3
+    // Blue value -- only works if colour-mode is set to 3
     "rgb-blue": 0xe006
 }
 
-async function setProperty(propName, propNum, value) {
+async function setProperty(propName, value) {
 
-    let propValue = properties[propName];
+    let propCode = properties[propName];
     const buf = Buffer.alloc(193);
 
     buf[0] = 0;
     Buffer.from([0x40, 0xc6]).copy(buf, 1);
     Buffer.from([0x20, 0, 0x6e, 0, 0x80]).copy(buf, 1 + 6);
 
-    let preamble = [];
     let msg = [];
 
-    if (propValue > 0xff) {
-        msg.push(propValue >> 8);
-        propValue &= 0xff;
+    if (propCode > 0xff) {
+        msg.push(propCode >> 8);
+        propCode &= 0xff;
     }
 
-    msg.push(propValue, 0, value);
+    msg.push(propCode, 0, value);
 
-    preamble = [0x51, 0x81 + msg.length, 0x03];
+    let preamble = [0x51, 0x81 + msg.length, 0x03];
 
     Buffer.from(preamble.concat(msg)).copy(buf, 1 + 0x40);
 
 
     try {
         dev.write(buf);
+        store.set(propName, value);
         console.log(`Property ${propName} set to ${value}`);
     } catch (error) {
         console.error(error);
