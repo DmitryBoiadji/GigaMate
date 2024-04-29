@@ -1,4 +1,4 @@
-const {app, Menu, ipcMain} = require('electron')
+const {app, Menu, ipcMain, globalShortcut} = require('electron')
 const {menubar} = require('menubar');
 const Store = require('electron-store');
 const store = new Store();
@@ -34,6 +34,14 @@ mb.on('ready', () => {
     mb.tray.on('right-click', () => {
         mb.tray.popUpContextMenu(contextMenu);
     });
+
+    globalShortcut.register('Alt+CommandOrControl+Shift+=', () => {
+        setBrightness(store.get('brightness') + 10);
+    })
+    globalShortcut.register('Alt+CommandOrControl+Shift+-', () => {
+        setBrightness(store.get('brightness') - 10);
+    })
+
 });
 
 function setBrightness(brightness) {
