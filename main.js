@@ -1,28 +1,39 @@
-const path = require('node:path')
-const {app, Menu, Tray, BrowserWindow, ipcRenderer, ipcMain} = require('electron')
-const {exec} = require("child_process");
+const {app, Menu, ipcMain} = require('electron')
+const {menubar} = require('menubar');
 const Store = require('electron-store');
-let tray = null
 const store = new Store();
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const {exec} = require("child_process");
 const expressApp = express();
-// parse application/x-www-form-urlencoded
-expressApp.use(bodyParser.urlencoded({extended: false}))
+const path = require('path');
+const iconPath = path.join(__dirname, 'assets', 'IconTemplate.png');
+const debug = false;
+const contextMenu = Menu.buildFromTemplate([
+    {label: 'exit', type: "normal", click: app.quit}
+])
 
-expressApp.listen(3000, () => {
-    console.log("Server running on port 3000");
+const mb = menubar({
+    browserWindow: {
+        width: 150,
+        height: 38,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
+    },
+    icon: iconPath,
+    tooltip: 'Gigabyte monitor control'
 });
 
-
-expressApp.post("/monitor-settings", (req, res, next) => {
-
-    console.log(req.body)
-    const brightness = req.body.brightness;
-    setBrightness(brightness);
-
-    res.json({"receivedMessage": brightness});
+mb.on('ready', () => {
+    ipcMain.on('brightness-change', (event, arg) => {
+        console.log(arg);
+        setBrightness(arg);
+    });
+    mb.tray.on('right-click', () => {
+        mb.tray.popUpContextMenu(contextMenu);
+    });
 });
 
 function setBrightness(brightness) {
@@ -40,61 +51,37 @@ function setBrightness(brightness) {
     });
 }
 
-function createTray() {
-    let tray = new Tray(path.join(__dirname, 'images/logo.png'))
-    const contextMenu = Menu.buildFromTemplate([
-        {label: 'settings', type: 'normal', click: createWindow},
-        {label: 'exit', type: "normal", click: app.quit}
-    ])
-    tray.setToolTip('Control GigabiteM32q Monitor')
-    tray.setContextMenu(contextMenu)
+// Listener for incoming requests from home assistant
+expressApp.use(bodyParser.urlencoded({extended: false}))
+
+expressApp.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
+
+expressApp.post("/monitor-settings", (req, res, next) => {
+
+    console.log(req.body)
+    const brightness = req.body.brightness;
+    setBrightness(brightness);
+
+    res.json({"receivedMessage": brightness});
+});
+
+
+expressApp.post("/monitor-settings", (req, res, next) => {
+
+    console.log(req.body)
+    const brightness = req.body.brightness;
+    setBrightness(brightness);
+
+    res.json({"receivedMessage": brightness});
+});
+
+
+if(debug){
+    mb.on('after-create-window', devMode)
 }
 
-function createWindow() {
-
-    const win = new BrowserWindow({
-        width: 400,
-        height: 400,
-        titleBarStyle: 'hidden',
-        titleBarOverlay: false,
-
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false
-        }
-    })
-
-    win.loadFile('index.html')
-    ipcMain.on('brightness-change', (event, arg) => {
-        console.log(arg);
-        setBrightness(arg);
-    });
-
+function devMode() {
+    mb.window.openDevTools();
 }
-
-app.whenReady().then(() => {
-    //   createWindow();
-    createTray();
-    let initialBrightness = store.get('brightness');
-
-
-    if(initialBrightness){
-        setBrightness(initialBrightness);
-    }
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow()
-        }
-    })
-})
-
-app.on('window-all-closed', () => {
-    app.quit()
-})
-
-
-
-
-
-

@@ -1,0 +1,6 @@
+monitor_brightness:
+  url: http://127.0.0.1:3000/monitor-settings
+  method: POST
+  content_type: "application/x-www-form-urlencoded"
+  payload: "brightness={{ brightness }}"
+  verify_ssl: false
