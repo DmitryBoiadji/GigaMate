@@ -3,13 +3,14 @@ const {menubar} = require('menubar');
 const Store = require('electron-store');
 const store = new Store();
 const express = require('express');
-const bodyParser = require('body-parser');
 const expressApp = express();
+const bodyParser = require('body-parser');
 const path = require('path');
+
 const iconPath = path.join(__dirname, 'images', 'icon@2x.png');
 const debug = false;
 const contextMenu = Menu.buildFromTemplate([
-    {label: 'exit', type: "normal", click: app.quit}
+    {label: 'Quit', type: "normal", click: app.quit}
 ])
 
 const mb = menubar({
@@ -71,7 +72,6 @@ expressApp.post("/monitor-settings", (req, res, next) => {
 
     res.json({"receivedMessage": brightness});
 });
-
 
 expressApp.post("/monitor-settings", (req, res, next) => {
 
