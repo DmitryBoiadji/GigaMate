@@ -1,4 +1,4 @@
-const {app, Menu, ipcMain, globalShortcut} = require('electron')
+const {app, Menu, ipcMain, globalShortcut, Notification} = require('electron')
 const {menubar} = require('menubar');
 const Store = require('electron-store');
 const store = new Store();
@@ -13,92 +13,9 @@ const contextMenu = Menu.buildFromTemplate([
     {label: 'Quit', type: "normal", click: app.quit}
 ])
 
-const mb = menubar({
-    browserWindow: {
-        width: 150,
-        height: 38,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false
-        }
-    },
-    icon: iconPath,
-    tooltip: 'Gigabyte monitor control'
-});
-
-mb.on('ready', () => {
-
-    ipcMain.on('brightness-change', (event, arg) => {
-        setBrightness(arg);
-    });
-    mb.tray.on('right-click', () => {
-        mb.tray.popUpContextMenu(contextMenu);
-    });
-
-    setShortcuts();
-    app.setLoginItemSettings({
-        openAtLogin: false,
-        openAsHidden: true
-    });
-
-});
-
-function setShortcuts() {
-    // TODO move shortcuts to settings
-    globalShortcut.register('Alt+CommandOrControl+Shift+=', () => {
-        setBrightness(store.get('brightness') + 10);
-    });
-    globalShortcut.register('Alt+CommandOrControl+Shift+-', () => {
-        setBrightness(store.get('brightness') - 10);
-    });
-}
-
-function setBrightness(brightness) {
-    setProperty("brightness", brightness);
-}
-
-// Listener for incoming requests from home assistant
-expressApp.use(bodyParser.urlencoded({extended: false}))
-
-expressApp.listen(3000, () => {
-    console.log("Server running on port 3000");
-});
-
-expressApp.post("/monitor-settings", (req, res, next) => {
-
-    console.log(req.body)
-    let brightness = req.body.brightness;
-    setBrightness(brightness);
-
-    res.json({"receivedMessage": brightness});
-});
-
-expressApp.post("/monitor-settings", (req, res, next) => {
-
-    console.log(req.body)
-    const brightness = req.body.brightness;
-    setBrightness(brightness);
-
-    res.json({"receivedMessage": brightness});
-});
-
-
-if (debug) {
-    mb.on('after-create-window', devMode)
-}
-
-function devMode() {
-    mb.window.openDevTools();
-}
-
 const HID = require('node-hid');
-const devices = HID.devices();
-const devInfo = devices.find(device => device.vendorId === 0x0bda && device.productId === 0x1100);
-if (!devInfo) {
-    throw new Error("Device not found.");
-}
-const dev = new HID.HID(devInfo.path);
-
+let deviceIsConnected = false;
+let dev = {};
 const properties = {
     // percent 0-100
     "brightness": 0x10,
@@ -122,7 +39,106 @@ const properties = {
     "rgb-blue": 0xe006
 }
 
+const mb = menubar({
+    browserWindow: {
+        width: 150,
+        height: 38,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
+    },
+    icon: iconPath,
+    tooltip: 'Gigabyte monitor control'
+});
+
+
+function showNotification(titleText, bodyText) {
+    new Notification({title: titleText, body: bodyText}).show()
+}
+
+
+mb.on('ready', () => {
+
+    ipcMain.on('brightness-change', (event, arg) => {
+        setBrightness(arg);
+    });
+    mb.tray.on('right-click', () => {
+        mb.tray.popUpContextMenu(contextMenu);
+    });
+
+    setShortcuts();
+    app.setLoginItemSettings({
+        openAtLogin: false,
+        openAsHidden: true
+    });
+    connectToDevice();
+});
+
+function setShortcuts() {
+    // TODO move shortcuts to settings
+    globalShortcut.register('Alt+CommandOrControl+Shift+=', () => {
+        setBrightness(parseInt(store.get('brightness')) + 10);
+    });
+    globalShortcut.register('Alt+CommandOrControl+Shift+-', () => {
+        setBrightness(parseInt(store.get('brightness')) - 10);
+    });
+}
+
+function setBrightness(brightness) {
+    setProperty("brightness", brightness);
+}
+
+// Listener for incoming requests from home assistant
+expressApp.use(bodyParser.urlencoded({extended: false}))
+
+expressApp.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
+
+expressApp.post("/monitor-settings", (req, res, next) => {
+    let brightness = req.body.brightness;
+    setBrightness(brightness);
+    res.json({"receivedMessage": brightness});
+});
+
+expressApp.post("/monitor-settings", (req, res, next) => {
+    const brightness = req.body.brightness;
+    setBrightness(brightness);
+    res.json({"receivedMessage": brightness});
+});
+
+
+if (debug) {
+    mb.on('after-create-window', devMode)
+}
+
+function devMode() {
+    mb.window.openDevTools();
+}
+
+
+function connectToDevice() {
+    try {
+        const devices = HID.devices();
+        // Realtek HID Device + USB Hub
+        const devInfo = devices.find(device => device.vendorId === 0x0bda && device.productId === 0x1100);
+        dev = new HID.HID(devInfo.path);
+        //deviceIsConnected = true;
+
+    } catch (error) {
+        console.error("Error connecting to device:", error);
+        setTimeout(connectToDevice, 3000); // Retry after 3 seconds
+    }
+}
+
 async function setProperty(propName, value) {
+
+    console.log(dev);
+
+    if (value > 100 || value < 0) {
+        return;
+    }
 
     let propCode = properties[propName];
     const buf = Buffer.alloc(193);
@@ -151,7 +167,7 @@ async function setProperty(propName, value) {
         console.log(`Property ${propName} set to ${value}`);
     } catch (error) {
         console.error(error);
+        showNotification('Error', 'Monitor not connected, trying to reconnect...');
+        connectToDevice();
     }
 }
-
-
