@@ -84,9 +84,9 @@ Feel free to fork the repository and submit pull requests. For major changes, pl
 
 ## Special thanks
 
-Mention kelvie is a must!
-
-https://github.com/kelvie/gbmonctl
+A huge thanks to @kelvie and his [gbmonctl](https://github.com/kelvie/gbmonctl) CLI tool written in Go, which heavily inspired me to start this pet project.  
+I used it for a while with QMK keyboard macros.Initially, I decided to write a simple wrapper around it but ended up rewriting it using the node-hid library.  
+Big thanks to @kelvie for reverse engineering the OSD Sidekick protocol!
 
 
 ## Acknowledgements
