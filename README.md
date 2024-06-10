@@ -1,20 +1,19 @@
 # GigaMate
 
-readme_icon.png
-
 This pet project is a tray utility for macOS built with [Electron](https://www.electronjs.org/), designed to control a capable Gigabyte monitors.  
 The application provides a simple interface to adjust brightness. 
 
+![ProjectImage](images/readme_icon.png)
+
 ## Features
 
+![Brightness](images/brightness.gif)
 
 - **Tray Icon**: Access the utility from the macOS tray.
 - **Monitor Control**: Adjust brightness.
 - **Global Shortcuts**: Use keyboard shortcuts to adjust brightness.
 - **Startup**: Runs app login.
 - **Express Server**: Control the monitor settings via HTTP requests, for example from [HomeAssistant](https://www.home-assistant.io/).
-
-- brightness.gif
 
 
 ## Capable models*
@@ -67,6 +66,8 @@ The application runs an Express server on port `3000` to accept HTTP requests fo
     brightness=<value>
     ```
 HomeAssistant rest example can be found [here](hass/rest.yaml).  
+
+![Brightness](images/hass.png)
 
 
 ## TO-DO
