@@ -1,6 +1,6 @@
 {
   "name": "GigaMate",
-  "version": "0.0.",
+  "version": "0.0.1",
   "description": "Controlling Gigabyte monitor",
   "main": "main.js",
   "author": "Jane Doe",
