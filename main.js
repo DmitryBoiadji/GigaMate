@@ -6,6 +6,8 @@ const express = require('express');
 const expressApp = express();
 const bodyParser = require('body-parser');
 const path = require('path');
+const autoUpdater = require("electron-updater");
+
 
 const iconPath = path.join(__dirname, 'images', 'icon@2x.png');
 const debug = false;
@@ -73,6 +75,7 @@ mb.on('ready', () => {
         openAsHidden: true
     });
     connectToDevice();
+    autoUpdater.checkForUpdatesAndNotify();
 });
 
 function setShortcuts() {
