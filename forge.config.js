@@ -7,9 +7,23 @@ module.exports = {
     icon: 'images/icon'
   },
   rebuildConfig: {},
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      //platforms: ['darwin', 'linux', 'windows'],
+      config: {
+        repository: {
+          owner: 'DmitryBoiadji',
+          name: 'GigaMate'
+        },
+        prerelease: true
+      }
+    }
+  ],
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
+      platforms: ['win32'],
       config: {},
     },
     {
@@ -18,6 +32,7 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-deb',
+      platforms: ['linux'],
       config: {},
     },
     {

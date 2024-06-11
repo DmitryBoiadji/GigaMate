@@ -6,8 +6,7 @@ const express = require('express');
 const expressApp = express();
 const bodyParser = require('body-parser');
 const path = require('path');
-const autoUpdater = require("electron-updater");
-
+// const { updateElectronApp } = require('update-electron-app');
 
 const iconPath = path.join(__dirname, 'images', 'icon@2x.png');
 const debug = false;
@@ -62,6 +61,9 @@ function showNotification(titleText, bodyText) {
 
 mb.on('ready', () => {
 
+    if (require('electron-squirrel-startup')) app.quit();
+
+
     ipcMain.on('brightness-change', (event, arg) => {
         setBrightness(arg);
     });
@@ -75,7 +77,6 @@ mb.on('ready', () => {
         openAsHidden: true
     });
     connectToDevice();
-    autoUpdater.checkForUpdatesAndNotify();
 });
 
 function setShortcuts() {

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Controlling Gigabyte monitor",
   "main": "main.js",
-  "author": "Jane Doe",
+  "author": "Dmitry Boiadji",
   "license": "MIT",
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
@@ -13,21 +13,20 @@
     "@electron-forge/maker-zip": "^7.4.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
     "@electron-forge/plugin-fuses": "^7.4.0",
+    "@electron-forge/publisher-github": "^7.4.0",
     "@electron/fuses": "^1.8.0",
     "electron": "^30.0.1",
-    "electron-builder": "^24.13.3"
+    "env-cmd": "^10.1.0"
   },
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "postinstall": "electron-builder install-app-deps",
-    "build": "electron-builder --mac --windows --linux",
-    "release": "electron-builder --mac --windows --linux --publish always"
+    "publish": "env-cmd electron-forge publish"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
-    "electron-squirrel-startup": "^1.0.0",
+    "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^8.2.0",
     "express": "^4.19.2",
     "menubar": "^9.4.0",
