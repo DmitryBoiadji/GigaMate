@@ -1,7 +1,7 @@
 {
-  "name": "gigabite-m32q-control",
+  "name": "GigaMate",
   "version": "1.0.0",
-  "description": "Controlling gigabite-m32q monitor ",
+  "description": "Controlling Gigabyte monitor",
   "main": "main.js",
   "author": "Jane Doe",
   "license": "MIT",
