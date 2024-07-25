@@ -16,6 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+#         os: [ubuntu-latest]
         node-version: ['20.x']
       fail-fast: false
 
@@ -29,6 +30,42 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
+
+    - name: Install Python and distutils on Ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install libusb-1.0-0-dev
+
+#     - name: Install Python and distutils on macOS
+#       if: matrix.os == 'macos-latest'
+#       run: |
+#         python3 -m ensurepip
+#         python3 -m pip install --upgrade pip setuptools
+
+#     - name: Install Python and distutils on Windows
+#       if: matrix.os == 'windows-latest'
+#       run: |
+#         brew install python
+#         refreshenv
+#         python -m ensurepip
+#         python -m pip install --upgrade pip setuptools
+
+#     - name: Install libusb on Ubuntu
+#       if: matrix.os == 'ubuntu-latest'
+#       run: sudo apt-get install -y libusb-1.0-0-dev
+
+    - name: Install libusb on macOS
+      if: matrix.os == 'macos-latest'
+      run: brew install libusb
+
+    - name: Install libusb on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install -y libusb-win32
+        # Ensure the libusb dll is in the system PATH
+        set PATH=%PATH%;"C:\Program Files\libusb-win32-bin-1.2.6.0\bin"
+
 
     - name: Install dependencies
       run: npm install
