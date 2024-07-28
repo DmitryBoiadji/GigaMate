@@ -1,60 +1,64 @@
-const { FusesPlugin } = require('@electron-forge/plugin-fuses');
-const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const {FusesPlugin} = require('@electron-forge/plugin-fuses');
+const {FuseV1Options, FuseVersion} = require('@electron/fuses');
 
 module.exports = {
-  packagerConfig: {
-    asar: true,
-    icon: 'images/icon'
-  },
-  rebuildConfig: {},
-  publishers: [
-    {
-      name: '@electron-forge/publisher-github',
-      //platforms: ['darwin', 'linux', 'windows'],
-      config: {
-        repository: {
-          owner: 'DmitryBoiadji',
-          name: 'GigaMate'
+    packagerConfig: {
+        asar: true,
+        icon: 'images/icon'
+    },
+    rebuildConfig: {},
+    publishers: [
+        {
+            name: '@electron-forge/publisher-github',
+            platforms: ['darwin', 'linux', 'win32'],
+            config: {
+                repository: {
+                    owner: 'DmitryBoiadji',
+                    name: 'GigaMate'
+                },
+                draft: true,
+                generateReleaseNotes: true,
+                prerelease: true
+            }
+        }
+    ],
+    "makers": [
+        {
+            "name": "@electron-forge/maker-squirrel",
+            "config": {
+                "name": "electron_quick_start"
+            }
         },
-        prerelease: true
-      }
-    }
-  ],
-  makers: [
-    {
-      name: '@electron-forge/maker-squirrel',
-      platforms: ['win32'],
-      config: {},
-    },
-    {
-      name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
-    },
-    {
-      name: '@electron-forge/maker-deb',
-      platforms: ['linux'],
-      config: {},
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {},
-    },
-  ],
-  plugins: [
-    {
-      name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {},
-    },
-    // Fuses are used to enable/disable various Electron functionality
-    // at package time, before code signing the application
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
-    }),
-  ],
+        {
+            "name": "@electron-forge/maker-zip",
+            "platforms": [
+                "darwin"
+            ]
+        },
+        {
+            "name": "@electron-forge/maker-deb",
+            "config": {}
+        },
+        {
+            "name": "@electron-forge/maker-rpm",
+            "config": {}
+        }
+    ],
+    plugins: [
+        {
+            name: '@electron-forge/plugin-auto-unpack-natives',
+            config: {},
+        },
+        // Fuses are used to enable/disable various Electron functionality
+        // at package time, before code signing the application
+        new FusesPlugin({
+            version: FuseVersion.V1,
+            [FuseV1Options.RunAsNode]: false,
+            [FuseV1Options.EnableCookieEncryption]: true,
+            [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+            [FuseV1Options.EnableNodeCliInspectArguments]: false,
+            [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+            [FuseV1Options.OnlyLoadAppFromAsar]: true,
+        }),
+    ],
 };
