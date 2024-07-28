@@ -25,10 +25,12 @@
     "publish": "env-cmd electron-forge publish"
   },
   "dependencies": {
+    "@electron-forge/maker-flatpak": "^7.4.0",
     "body-parser": "^1.20.2",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^8.2.0",
     "express": "^4.19.2",
+    "install": "^0.13.0",
     "menubar": "^9.4.0",
     "node-hid": "^3.0.0",
     "socket.io-client": "^4.7.5"
