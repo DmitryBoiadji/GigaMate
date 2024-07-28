@@ -22,7 +22,8 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "publish": "env-cmd electron-forge publish"
+    "pub": "env-cmd electron-forge publish",
+    "pub-all": "env-cmd electron-forge publish --platform win32 linux darwin"
   },
   "dependencies": {
     "@electron-forge/maker-flatpak": "^7.4.0",
