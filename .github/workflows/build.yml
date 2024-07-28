@@ -57,12 +57,13 @@ jobs:
 
     - name: Install libusb on macOS
       if: matrix.os == 'macos-latest'
-      run: brew install libusb python3 g++ make
+      run: brew install libusb
 
     - name: Install libusb on Windows
       if: matrix.os == 'windows-latest'
       run: |
-        choco install -y libusb-win32
+        choco source update
+        choco install -y libusbdotnet
         # Ensure the libusb dll is in the system PATH
         set PATH=%PATH%;"C:\Program Files\libusb-win32-bin-1.2.6.0\bin"
 
