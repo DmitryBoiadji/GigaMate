@@ -6,7 +6,10 @@ module.exports = {
         asar: true,
         icon: 'images/icon'
     },
-    rebuildConfig: {},
+    rebuildConfig: {
+        force: true,
+        onlyModules: [] // Skip rebuild - use pre-built native modules
+    },
     publishers: [
         {
             name: '@electron-forge/publisher-github',

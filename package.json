@@ -19,6 +19,8 @@
     "env-cmd": "^10.1.0"
   },
   "scripts": {
+    "rebuild": "electron-rebuild",
+    "rebuild:arm64": "electron-rebuild --arch arm64",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",

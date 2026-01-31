@@ -39,7 +39,14 @@ _* Probably all Gigabyte monitors that uses a Realtek HID device to control it o
     npm install
     ```
 
-3. **Run the application**:
+3. **Rebuild native modules** (Apple Silicon Macs only):
+
+    If you're using an Intel build of Node.js on an Apple Silicon Mac, rebuild native modules for ARM64:
+    ```bash
+    npm run rebuild:arm64
+    ```
+
+4. **Run the application**:
     ```bash
     npm start
     ```
