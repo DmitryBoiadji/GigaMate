@@ -28,10 +28,11 @@
 
 <div class="control-group kvm-group">
     <span class="control-label">KVM</span>
-    <div class="kvm-buttons">
-        <button class="kvm-btn" id="kvm-0" data-kvm="0">PC 1</button>
-        <button class="kvm-btn" id="kvm-1" data-kvm="1">PC 2</button>
-    </div>
+    <button class="kvm-btn" id="kvm-switch">Switch</button>
+</div>
+
+<div class="settings-link">
+    <a href="#" id="open-settings">Settings</a>
 </div>
 
 <script>
@@ -49,7 +50,8 @@
         volume: document.getElementById('volume-value')
     };
 
-    const kvmButtons = document.querySelectorAll('.kvm-btn');
+    const kvmSwitch = document.getElementById('kvm-switch');
+    let currentKvm = 0;
 
     // Slider event listeners
     Object.keys(controls).forEach(name => {
@@ -59,14 +61,10 @@
         });
     });
 
-    // KVM button event listeners
-    kvmButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const kvmValue = parseInt(this.dataset.kvm);
-            kvmButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            ipcRenderer.send('kvm-switch-change', kvmValue);
-        });
+    // KVM switch button
+    kvmSwitch.addEventListener('click', function() {
+        currentKvm = currentKvm === 0 ? 1 : 0;
+        ipcRenderer.send('kvm-switch-change', currentKvm);
     });
 
     // Receive current values from main process
@@ -79,14 +77,18 @@
         });
 
         if (data.kvm !== undefined) {
-            kvmButtons.forEach(b => b.classList.remove('active'));
-            const activeBtn = document.getElementById(`kvm-${data.kvm}`);
-            if (activeBtn) activeBtn.classList.add('active');
+            currentKvm = data.kvm;
         }
     });
 
     // Request initial values when window loads
     ipcRenderer.send('request-values');
+
+    // Settings link
+    document.getElementById('open-settings').addEventListener('click', (e) => {
+        e.preventDefault();
+        ipcRenderer.send('open-settings');
+    });
 </script>
 
 </body>

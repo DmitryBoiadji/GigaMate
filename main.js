@@ -22,7 +22,7 @@ const defaultSettings = {
         contrastDown: '',
         volumeUp: '',
         volumeDown: '',
-        kvmSwitch: ''
+        kvmSwitch: 'Alt+CommandOrControl+Shift+0'
     },
     startup: {
         openAtLogin: false,
@@ -53,9 +53,19 @@ function openSettingsWindow() {
         return;
     }
 
+    const windowWidth = 450;
+    const windowHeight = 500;
+
+    // Get tray icon bounds to position window near it
+    const trayBounds = mb.tray.getBounds();
+    const x = Math.round(trayBounds.x + trayBounds.width / 2 - windowWidth / 2);
+    const y = process.platform === 'darwin' ? trayBounds.y + trayBounds.height + 4 : trayBounds.y - windowHeight - 4;
+
     settingsWindow = new BrowserWindow({
-        width: 450,
-        height: 500,
+        width: windowWidth,
+        height: windowHeight,
+        x: x,
+        y: y,
         resizable: false,
         minimizable: false,
         maximizable: false,
@@ -180,6 +190,10 @@ mb.on('ready', () => {
     ipcMain.on('capture-shortcut', (event, shortcutName) => {
         // The renderer will handle the actual key capture
         event.reply('start-capture', shortcutName);
+    });
+
+    ipcMain.on('open-settings', () => {
+        openSettingsWindow();
     });
 
     mb.tray.on('right-click', () => {
