@@ -48,6 +48,12 @@
         <input type="text" class="shortcut-input" id="shortcut-volumeDown" readonly placeholder="Click to set">
         <button class="clear-btn" data-shortcut="volumeDown">Clear</button>
     </div>
+
+    <div class="setting-row">
+        <span class="setting-label">KVM Switch</span>
+        <input type="text" class="shortcut-input" id="shortcut-kvmSwitch" readonly placeholder="Click to set">
+        <button class="clear-btn" data-shortcut="kvmSwitch">Clear</button>
+    </div>
 </div>
 
 <div class="section">
@@ -121,7 +127,8 @@
         contrastUp: document.getElementById('shortcut-contrastUp'),
         contrastDown: document.getElementById('shortcut-contrastDown'),
         volumeUp: document.getElementById('shortcut-volumeUp'),
-        volumeDown: document.getElementById('shortcut-volumeDown')
+        volumeDown: document.getElementById('shortcut-volumeDown'),
+        kvmSwitch: document.getElementById('shortcut-kvmSwitch')
     };
 
     const elements = {

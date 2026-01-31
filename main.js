@@ -21,7 +21,8 @@ const defaultSettings = {
         contrastUp: '',
         contrastDown: '',
         volumeUp: '',
-        volumeDown: ''
+        volumeDown: '',
+        kvmSwitch: ''
     },
     startup: {
         openAtLogin: false,
@@ -240,6 +241,15 @@ function setShortcuts() {
         globalShortcut.register(shortcuts.volumeDown, () => {
             const current = parseInt(store.get('volume', settings.defaults.volume));
             setProperty('volume', Math.max(0, current - 10));
+        });
+    }
+
+    if (shortcuts.kvmSwitch) {
+        globalShortcut.register(shortcuts.kvmSwitch, () => {
+            const current = store.get('kvm', 0);
+            const newValue = current === 0 ? 1 : 0;
+            setProperty('kvm-switch', newValue);
+            store.set('kvm', newValue);
         });
     }
 }
