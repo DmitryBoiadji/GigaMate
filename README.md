@@ -44,6 +44,13 @@ _* Probably all Gigabyte monitors that uses a Realtek HID device to control it o
     npm start
     ```
 
+### macOS Gatekeeper
+
+If you download a pre-built release and macOS shows "GigaMate is damaged and can't be opened", run:
+```bash
+xattr -c /Applications/GigaMate.app
+```
+
 ## Usage
 
 ### Global Shortcuts
@@ -54,7 +61,7 @@ Default shortcuts (configurable in Settings):
 - **Brightness Down**: `Alt+Cmd/Ctrl+Shift+-`
 - **Contrast Up/Down**: Not set by default
 - **Volume Up/Down**: Not set by default
-- **KVM Switch**: Not set by default
+- **KVM Switch**: `Alt+Cmd/Ctrl+Shift+0`
 
 ### Tray Menu
 
