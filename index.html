@@ -4,31 +4,90 @@
     <meta charset="UTF-8">
     <title>GigaMate</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
-    <style>
-        body {
-            -webkit-user-select: none;
-        }
-        .slide-container{
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="slide-container">
-    <label for="brightness"></label>
-    <input type="range" min="1" max="100" value="50" class="slider" id="brightness">
-    <span id="range-value"></span>
+
+<div class="control-group">
+    <span class="control-label">Brightness</span>
+    <input type="range" min="0" max="100" value="50" class="slider" id="brightness">
+    <span class="control-value" id="brightness-value">50</span>
 </div>
 
+<div class="control-group">
+    <span class="control-label">Contrast</span>
+    <input type="range" min="0" max="100" value="50" class="slider" id="contrast">
+    <span class="control-value" id="contrast-value">50</span>
+</div>
+
+<div class="control-group">
+    <span class="control-label">Volume</span>
+    <input type="range" min="0" max="100" value="50" class="slider" id="volume">
+    <span class="control-value" id="volume-value">50</span>
+</div>
+
+<div class="control-group kvm-group">
+    <span class="control-label">KVM</span>
+    <div class="kvm-buttons">
+        <button class="kvm-btn" id="kvm-0" data-kvm="0">PC 1</button>
+        <button class="kvm-btn" id="kvm-1" data-kvm="1">PC 2</button>
+    </div>
+</div>
 
 <script>
     const {ipcRenderer} = require('electron');
-    var brightness = document.getElementById('brightness');
-    brightness.addEventListener('input', function () {
-        ipcRenderer.send('brightness-change', this.value);
-    });
-</script>
 
+    const controls = {
+        brightness: document.getElementById('brightness'),
+        contrast: document.getElementById('contrast'),
+        volume: document.getElementById('volume')
+    };
+
+    const values = {
+        brightness: document.getElementById('brightness-value'),
+        contrast: document.getElementById('contrast-value'),
+        volume: document.getElementById('volume-value')
+    };
+
+    const kvmButtons = document.querySelectorAll('.kvm-btn');
+
+    // Slider event listeners
+    Object.keys(controls).forEach(name => {
+        controls[name].addEventListener('input', function() {
+            values[name].textContent = this.value;
+            ipcRenderer.send(`${name}-change`, parseInt(this.value));
+        });
+    });
+
+    // KVM button event listeners
+    kvmButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const kvmValue = parseInt(this.dataset.kvm);
+            kvmButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            ipcRenderer.send('kvm-switch-change', kvmValue);
+        });
+    });
+
+    // Receive current values from main process
+    ipcRenderer.on('init-values', (event, data) => {
+        Object.keys(controls).forEach(name => {
+            if (data[name] !== undefined) {
+                controls[name].value = data[name];
+                values[name].textContent = data[name];
+            }
+        });
+
+        if (data.kvm !== undefined) {
+            kvmButtons.forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`kvm-${data.kvm}`);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+    });
+
+    // Request initial values when window loads
+    ipcRenderer.send('request-values');
+</script>
 
 </body>
 </html>

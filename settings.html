@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>GigaMate Settings</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+
+<h1>Settings</h1>
+
+<div class="section">
+    <div class="section-title">Keyboard Shortcuts</div>
+
+    <div class="setting-row">
+        <span class="setting-label">Brightness Up</span>
+        <input type="text" class="shortcut-input" id="shortcut-brightnessUp" readonly placeholder="Click to set">
+        <button class="clear-btn" data-shortcut="brightnessUp">Clear</button>
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Brightness Down</span>
+        <input type="text" class="shortcut-input" id="shortcut-brightnessDown" readonly placeholder="Click to set">
+        <button class="clear-btn" data-shortcut="brightnessDown">Clear</button>
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Contrast Up</span>
+        <input type="text" class="shortcut-input" id="shortcut-contrastUp" readonly placeholder="Click to set">
+        <button class="clear-btn" data-shortcut="contrastUp">Clear</button>
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Contrast Down</span>
+        <input type="text" class="shortcut-input" id="shortcut-contrastDown" readonly placeholder="Click to set">
+        <button class="clear-btn" data-shortcut="contrastDown">Clear</button>
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Volume Up</span>
+        <input type="text" class="shortcut-input" id="shortcut-volumeUp" readonly placeholder="Click to set">
+        <button class="clear-btn" data-shortcut="volumeUp">Clear</button>
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Volume Down</span>
+        <input type="text" class="shortcut-input" id="shortcut-volumeDown" readonly placeholder="Click to set">
+        <button class="clear-btn" data-shortcut="volumeDown">Clear</button>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">Startup</div>
+
+    <div class="setting-row">
+        <span class="setting-label">Open at login</span>
+        <div class="checkbox-wrapper">
+            <input type="checkbox" id="openAtLogin">
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Start hidden</span>
+        <div class="checkbox-wrapper">
+            <input type="checkbox" id="startHidden">
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">HTTP API</div>
+
+    <div class="setting-row">
+        <span class="setting-label">Enable API</span>
+        <div class="toggle-wrapper">
+            <div class="toggle" id="apiEnabled"></div>
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Port</span>
+        <input type="number" class="number-input" id="apiPort" min="1024" max="65535">
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">Default Values</div>
+
+    <div class="setting-row">
+        <span class="setting-label">Brightness</span>
+        <input type="number" class="number-input" id="defaultBrightness" min="0" max="100">
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Contrast</span>
+        <input type="number" class="number-input" id="defaultContrast" min="0" max="100">
+    </div>
+
+    <div class="setting-row">
+        <span class="setting-label">Volume</span>
+        <input type="number" class="number-input" id="defaultVolume" min="0" max="100">
+    </div>
+</div>
+
+<div class="button-row">
+    <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+    <button class="btn btn-primary" id="saveBtn">Save</button>
+</div>
+
+<script>
+    const {ipcRenderer} = require('electron');
+
+    let currentSettings = null;
+    let recordingInput = null;
+
+    // DOM elements
+    const shortcutInputs = {
+        brightnessUp: document.getElementById('shortcut-brightnessUp'),
+        brightnessDown: document.getElementById('shortcut-brightnessDown'),
+        contrastUp: document.getElementById('shortcut-contrastUp'),
+        contrastDown: document.getElementById('shortcut-contrastDown'),
+        volumeUp: document.getElementById('shortcut-volumeUp'),
+        volumeDown: document.getElementById('shortcut-volumeDown')
+    };
+
+    const elements = {
+        openAtLogin: document.getElementById('openAtLogin'),
+        startHidden: document.getElementById('startHidden'),
+        apiEnabled: document.getElementById('apiEnabled'),
+        apiPort: document.getElementById('apiPort'),
+        defaultBrightness: document.getElementById('defaultBrightness'),
+        defaultContrast: document.getElementById('defaultContrast'),
+        defaultVolume: document.getElementById('defaultVolume')
+    };
+
+    // Load settings
+    ipcRenderer.send('get-settings');
+
+    ipcRenderer.on('settings-data', (event, settings) => {
+        currentSettings = settings;
+        populateForm(settings);
+    });
+
+    function populateForm(settings) {
+        // Shortcuts
+        Object.keys(shortcutInputs).forEach(key => {
+            const value = settings.shortcuts[key] || '';
+            shortcutInputs[key].value = formatShortcut(value);
+            shortcutInputs[key].dataset.value = value;
+            updateShortcutStyle(shortcutInputs[key]);
+        });
+
+        // Startup
+        elements.openAtLogin.checked = settings.startup.openAtLogin;
+        elements.startHidden.checked = settings.startup.startHidden;
+
+        // API
+        elements.apiEnabled.classList.toggle('active', settings.api.enabled);
+        elements.apiPort.value = settings.api.port;
+
+        // Defaults
+        elements.defaultBrightness.value = settings.defaults.brightness;
+        elements.defaultContrast.value = settings.defaults.contrast;
+        elements.defaultVolume.value = settings.defaults.volume;
+    }
+
+    function formatShortcut(shortcut) {
+        if (!shortcut) return '';
+        return shortcut
+            .replace('CommandOrControl', process.platform === 'darwin' ? 'Cmd' : 'Ctrl')
+            .replace('Command', 'Cmd')
+            .replace('Control', 'Ctrl');
+    }
+
+    function updateShortcutStyle(input) {
+        input.classList.toggle('empty', !input.dataset.value);
+    }
+
+    // Shortcut recording
+    Object.keys(shortcutInputs).forEach(key => {
+        shortcutInputs[key].addEventListener('click', function() {
+            startRecording(this, key);
+        });
+    });
+
+    function startRecording(input, key) {
+        if (recordingInput) {
+            recordingInput.classList.remove('recording');
+            recordingInput.value = formatShortcut(recordingInput.dataset.value);
+        }
+
+        recordingInput = input;
+        input.classList.add('recording');
+        input.value = 'Press keys...';
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (!recordingInput) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Escape cancels recording
+        if (e.key === 'Escape') {
+            recordingInput.classList.remove('recording');
+            recordingInput.value = formatShortcut(recordingInput.dataset.value);
+            recordingInput = null;
+            return;
+        }
+
+        // Skip modifier-only keys
+        if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
+            return;
+        }
+
+        const parts = [];
+        if (e.ctrlKey || e.metaKey) parts.push('CommandOrControl');
+        if (e.altKey) parts.push('Alt');
+        if (e.shiftKey) parts.push('Shift');
+
+        // Convert key to Electron accelerator format
+        let key = e.key;
+        if (key === ' ') key = 'Space';
+        else if (key === '+') key = 'Plus';
+        else if (key === '=') key = '=';
+        else if (key === '-') key = '-';
+        else if (key.length === 1) key = key.toUpperCase();
+        else if (key.startsWith('Arrow')) key = key.replace('Arrow', '');
+
+        parts.push(key);
+
+        const shortcut = parts.join('+');
+        recordingInput.dataset.value = shortcut;
+        recordingInput.value = formatShortcut(shortcut);
+        recordingInput.classList.remove('recording');
+        updateShortcutStyle(recordingInput);
+        recordingInput = null;
+    });
+
+    // Clear buttons
+    document.querySelectorAll('.clear-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key = btn.dataset.shortcut;
+            shortcutInputs[key].dataset.value = '';
+            shortcutInputs[key].value = '';
+            updateShortcutStyle(shortcutInputs[key]);
+        });
+    });
+
+    // Toggle
+    elements.apiEnabled.addEventListener('click', function() {
+        this.classList.toggle('active');
+    });
+
+    // Save
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        const settings = {
+            shortcuts: {},
+            startup: {
+                openAtLogin: elements.openAtLogin.checked,
+                startHidden: elements.startHidden.checked
+            },
+            api: {
+                enabled: elements.apiEnabled.classList.contains('active'),
+                port: parseInt(elements.apiPort.value) || 3000
+            },
+            defaults: {
+                brightness: parseInt(elements.defaultBrightness.value) || 50,
+                contrast: parseInt(elements.defaultContrast.value) || 50,
+                volume: parseInt(elements.defaultVolume.value) || 50
+            }
+        };
+
+        Object.keys(shortcutInputs).forEach(key => {
+            settings.shortcuts[key] = shortcutInputs[key].dataset.value || '';
+        });
+
+        ipcRenderer.send('save-settings', settings);
+    });
+
+    ipcRenderer.on('settings-saved', () => {
+        window.close();
+    });
+
+    // Cancel
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        window.close();
+    });
+</script>
+
+</body>
+</html>
