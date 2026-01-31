@@ -53,22 +53,14 @@ function openSettingsWindow() {
         return;
     }
 
-    const windowWidth = 450;
-    const windowHeight = 500;
-
-    // Get tray icon bounds to position window near it
-    const trayBounds = mb.tray.getBounds();
-    const x = Math.round(trayBounds.x + trayBounds.width / 2 - windowWidth / 2);
-    const y = process.platform === 'darwin' ? trayBounds.y + trayBounds.height + 4 : trayBounds.y - windowHeight - 4;
-
     settingsWindow = new BrowserWindow({
-        width: windowWidth,
-        height: windowHeight,
-        x: x,
-        y: y,
+        width: 500,
+        height: 600,
+        center: true,
         resizable: false,
         minimizable: false,
         maximizable: false,
+        show: false,
         title: 'GigaMate Settings',
         webPreferences: {
             nodeIntegration: true,
@@ -78,6 +70,14 @@ function openSettingsWindow() {
 
     settingsWindow.loadFile('settings.html');
     settingsWindow.setMenu(null);
+
+    settingsWindow.webContents.on('did-finish-load', () => {
+        settingsWindow.webContents.executeJavaScript('document.body.scrollHeight').then(height => {
+            settingsWindow.setContentSize(500, height + 20);
+            settingsWindow.center();
+            settingsWindow.show();
+        });
+    });
 
     if (debug) {
         settingsWindow.webContents.openDevTools();
@@ -112,7 +112,7 @@ const properties = {
 const mb = menubar({
     browserWindow: {
         width: 300,
-        height: 240,
+        height: 246,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
