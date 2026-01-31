@@ -101,8 +101,8 @@ const properties = {
 
 const mb = menubar({
     browserWindow: {
-        width: 200,
-        height: 160,
+        width: 300,
+        height: 240,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false

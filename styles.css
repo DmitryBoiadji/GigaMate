@@ -7,84 +7,158 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 12px;
     margin: 0;
-    padding: 8px;
-    background: #2d2d2d;
+    padding: 12px;
+    background: linear-gradient(145deg, #1e1e1e 0%, #2a2a2a 100%);
     color: #e0e0e0;
+    min-width: 240px;
 }
 
 .control-group {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.control-group:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.control-group:last-child {
+    margin-bottom: 0;
 }
 
 .control-label {
-    width: 60px;
+    width: 65px;
     font-weight: 500;
-    color: #b0b0b0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    transition: color 0.2s ease;
+}
+
+.control-group:hover .control-label {
+    color: #aaa;
 }
 
 .slider {
     flex: 1;
     -webkit-appearance: none;
-    height: 4px;
-    border-radius: 2px;
-    background: #555;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #3a3a3a 0%, #454545 100%);
     outline: none;
-    margin: 0 8px;
+    margin: 0 10px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: #4a9eff;
+    background: linear-gradient(145deg, #5aacff 0%, #3d8ee6 100%);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(74, 158, 255, 0.4),
+                0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .slider::-webkit-slider-thumb:hover {
-    background: #6bb3ff;
+    background: linear-gradient(145deg, #6bb8ff 0%, #4a9eff 100%);
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(74, 158, 255, 0.5),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-webkit-slider-thumb:active {
+    transform: scale(0.95);
 }
 
 .control-value {
-    width: 28px;
+    width: 32px;
     text-align: right;
     font-variant-numeric: tabular-nums;
-    color: #e0e0e0;
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .kvm-group {
     display: flex;
     align-items: center;
-    margin-top: 4px;
+    padding: 10px;
 }
 
 .kvm-buttons {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     margin-left: auto;
 }
 
 .kvm-btn {
-    padding: 4px 12px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background: #3d3d3d;
-    color: #e0e0e0;
+    padding: 6px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: linear-gradient(145deg, #3d3d3d 0%, #333 100%);
+    color: #ccc;
     cursor: pointer;
     font-size: 11px;
-    transition: all 0.15s;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .kvm-btn:hover {
-    background: #4d4d4d;
-    border-color: #666;
+    background: linear-gradient(145deg, #4d4d4d 0%, #444 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.kvm-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .kvm-btn.active {
-    background: #4a9eff;
-    border-color: #4a9eff;
+    background: linear-gradient(145deg, #5aacff 0%, #3d8ee6 100%);
+    border-color: transparent;
     color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(74, 158, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.kvm-btn.active:hover {
+    background: linear-gradient(145deg, #6bb8ff 0%, #4a9eff 100%);
+    box-shadow: 0 3px 12px rgba(74, 158, 255, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Custom scrollbar for consistency */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
