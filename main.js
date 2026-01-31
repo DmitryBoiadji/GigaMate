@@ -6,6 +6,8 @@ const express = require('express');
 const expressApp = express();
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 
 const iconPath = path.join(__dirname, 'images', 'icon@2x.png');
 const debug = false;
@@ -45,6 +47,63 @@ function getSettings() {
 
 function saveSettings(newSettings) {
     store.set('settings', newSettings);
+}
+
+// macOS Launch Agent for autostart (works without code signing)
+function getLaunchAgentPath() {
+    return path.join(os.homedir(), 'Library', 'LaunchAgents', 'com.gigamate.app.plist');
+}
+
+function setLaunchAgent(enabled) {
+    if (process.platform !== 'darwin') {
+        app.setLoginItemSettings({ openAtLogin: enabled });
+        return;
+    }
+
+    const plistPath = getLaunchAgentPath();
+
+    if (enabled) {
+        const appPath = app.isPackaged
+            ? app.getPath('exe').replace(/\/Contents\/MacOS\/.*$/, '')
+            : process.execPath;
+
+        const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.gigamate.app</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/open</string>
+        <string>-a</string>
+        <string>${appPath}</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>`;
+
+        try {
+            const launchAgentsDir = path.dirname(plistPath);
+            if (!fs.existsSync(launchAgentsDir)) {
+                fs.mkdirSync(launchAgentsDir, { recursive: true });
+            }
+            fs.writeFileSync(plistPath, plistContent);
+            console.log('Launch Agent created:', plistPath);
+        } catch (error) {
+            console.error('Failed to create Launch Agent:', error);
+        }
+    } else {
+        try {
+            if (fs.existsSync(plistPath)) {
+                fs.unlinkSync(plistPath);
+                console.log('Launch Agent removed:', plistPath);
+            }
+        } catch (error) {
+            console.error('Failed to remove Launch Agent:', error);
+        }
+    }
 }
 
 function openSettingsWindow() {
@@ -168,10 +227,7 @@ mb.on('ready', () => {
         saveSettings(newSettings);
 
         // Apply startup settings
-        app.setLoginItemSettings({
-            openAtLogin: newSettings.startup.openAtLogin,
-            openAsHidden: newSettings.startup.startHidden
-        });
+        setLaunchAgent(newSettings.startup.openAtLogin);
 
         // Re-register shortcuts if changed
         if (JSON.stringify(oldSettings.shortcuts) !== JSON.stringify(newSettings.shortcuts)) {
@@ -202,11 +258,11 @@ mb.on('ready', () => {
 
     setShortcuts();
 
+    // Apply startup settings on app start
     const settings = getSettings();
-    app.setLoginItemSettings({
-        openAtLogin: settings.startup.openAtLogin,
-        openAsHidden: settings.startup.startHidden
-    });
+    if (settings.startup.openAtLogin) {
+        setLaunchAgent(true);
+    }
 
     connectToDevice();
     startHttpServer();
