@@ -110,8 +110,8 @@
 </div>
 
 <div class="button-row">
-    <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-    <button class="btn btn-primary" id="saveBtn">Save</button>
+    <span class="save-indicator" id="saveIndicator"></span>
+    <button class="btn btn-secondary" id="closeBtn">Close</button>
 </div>
 
 <script>
@@ -243,6 +243,7 @@
         recordingInput.classList.remove('recording');
         updateShortcutStyle(recordingInput);
         recordingInput = null;
+        autoSave();
     });
 
     // Clear buttons
@@ -252,16 +253,31 @@
             shortcutInputs[key].dataset.value = '';
             shortcutInputs[key].value = '';
             updateShortcutStyle(shortcutInputs[key]);
+            autoSave();
         });
     });
 
     // Toggle
     elements.apiEnabled.addEventListener('click', function() {
         this.classList.toggle('active');
+        autoSave();
     });
 
-    // Save
-    document.getElementById('saveBtn').addEventListener('click', () => {
+    // Autosave functionality
+    let saveTimeout = null;
+    const saveIndicator = document.getElementById('saveIndicator');
+
+    function showSaveIndicator(text, className) {
+        saveIndicator.textContent = text;
+        saveIndicator.className = 'save-indicator ' + className;
+        if (className === 'saved') {
+            setTimeout(() => {
+                saveIndicator.className = 'save-indicator';
+            }, 2000);
+        }
+    }
+
+    function collectSettings() {
         const settings = {
             shortcuts: {},
             startup: {
@@ -270,7 +286,7 @@
             },
             api: {
                 enabled: elements.apiEnabled.classList.contains('active'),
-                port: parseInt(elements.apiPort.value) || 3000
+                port: parseInt(elements.apiPort.value) || 3003
             },
             defaults: {
                 brightness: parseInt(elements.defaultBrightness.value) || 50,
@@ -283,15 +299,39 @@
             settings.shortcuts[key] = shortcutInputs[key].dataset.value || '';
         });
 
-        ipcRenderer.send('save-settings', settings);
-    });
+        return settings;
+    }
+
+    function autoSave() {
+        showSaveIndicator('Saving...', 'saving');
+
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+        }
+
+        saveTimeout = setTimeout(() => {
+            ipcRenderer.send('save-settings', collectSettings());
+        }, 300);
+    }
+
+    // Add change listeners for autosave
+    elements.openAtLogin.addEventListener('change', autoSave);
+    elements.startHidden.addEventListener('change', autoSave);
+    elements.apiPort.addEventListener('change', autoSave);
+    elements.apiPort.addEventListener('input', autoSave);
+    elements.defaultBrightness.addEventListener('change', autoSave);
+    elements.defaultBrightness.addEventListener('input', autoSave);
+    elements.defaultContrast.addEventListener('change', autoSave);
+    elements.defaultContrast.addEventListener('input', autoSave);
+    elements.defaultVolume.addEventListener('change', autoSave);
+    elements.defaultVolume.addEventListener('input', autoSave);
 
     ipcRenderer.on('settings-saved', () => {
-        window.close();
+        showSaveIndicator('Saved', 'saved');
     });
 
-    // Cancel
-    document.getElementById('cancelBtn').addEventListener('click', () => {
+    // Close
+    document.getElementById('closeBtn').addEventListener('click', () => {
         window.close();
     });
 </script>

@@ -224,10 +224,26 @@ h1 {
 .button-row {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 12px;
     margin-top: 20px;
     padding-top: 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.save-indicator {
+    font-size: 12px;
+    color: transparent;
+    transition: color 0.2s ease;
+    margin-right: auto;
+}
+
+.save-indicator.saving {
+    color: #888;
+}
+
+.save-indicator.saved {
+    color: #5aacff;
 }
 
 .btn {
