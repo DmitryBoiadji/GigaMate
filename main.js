@@ -18,13 +18,13 @@ let httpServer = null;
 // Default settings
 const defaultSettings = {
     shortcuts: {
-        brightnessUp: 'Alt+CommandOrControl+Shift+=',
-        brightnessDown: 'Alt+CommandOrControl+Shift+-',
+        brightnessUp: 'CommandOrControl+Alt+Up',
+        brightnessDown: 'CommandOrControl+Alt+Down',
         contrastUp: '',
         contrastDown: '',
         volumeUp: '',
         volumeDown: '',
-        kvmSwitch: 'Alt+CommandOrControl+Shift+0'
+        kvmSwitch: 'CommandOrControl+Alt+K'
     },
     startup: {
         openAtLogin: false,
@@ -273,54 +273,61 @@ function setShortcuts() {
     const shortcuts = settings.shortcuts;
 
     if (shortcuts.brightnessUp) {
-        globalShortcut.register(shortcuts.brightnessUp, () => {
+        const success = globalShortcut.register(shortcuts.brightnessUp, () => {
             const current = parseInt(store.get('brightness', settings.defaults.brightness));
             setProperty('brightness', Math.min(100, current + 10));
         });
+        console.log(`Shortcut brightnessUp (${shortcuts.brightnessUp}): ${success ? 'registered' : 'FAILED'}`);
     }
 
     if (shortcuts.brightnessDown) {
-        globalShortcut.register(shortcuts.brightnessDown, () => {
+        const success = globalShortcut.register(shortcuts.brightnessDown, () => {
             const current = parseInt(store.get('brightness', settings.defaults.brightness));
             setProperty('brightness', Math.max(0, current - 10));
         });
+        console.log(`Shortcut brightnessDown (${shortcuts.brightnessDown}): ${success ? 'registered' : 'FAILED'}`);
     }
 
     if (shortcuts.contrastUp) {
-        globalShortcut.register(shortcuts.contrastUp, () => {
+        const success = globalShortcut.register(shortcuts.contrastUp, () => {
             const current = parseInt(store.get('contrast', settings.defaults.contrast));
             setProperty('contrast', Math.min(100, current + 10));
         });
+        console.log(`Shortcut contrastUp (${shortcuts.contrastUp}): ${success ? 'registered' : 'FAILED'}`);
     }
 
     if (shortcuts.contrastDown) {
-        globalShortcut.register(shortcuts.contrastDown, () => {
+        const success = globalShortcut.register(shortcuts.contrastDown, () => {
             const current = parseInt(store.get('contrast', settings.defaults.contrast));
             setProperty('contrast', Math.max(0, current - 10));
         });
+        console.log(`Shortcut contrastDown (${shortcuts.contrastDown}): ${success ? 'registered' : 'FAILED'}`);
     }
 
     if (shortcuts.volumeUp) {
-        globalShortcut.register(shortcuts.volumeUp, () => {
+        const success = globalShortcut.register(shortcuts.volumeUp, () => {
             const current = parseInt(store.get('volume', settings.defaults.volume));
             setProperty('volume', Math.min(100, current + 10));
         });
+        console.log(`Shortcut volumeUp (${shortcuts.volumeUp}): ${success ? 'registered' : 'FAILED'}`);
     }
 
     if (shortcuts.volumeDown) {
-        globalShortcut.register(shortcuts.volumeDown, () => {
+        const success = globalShortcut.register(shortcuts.volumeDown, () => {
             const current = parseInt(store.get('volume', settings.defaults.volume));
             setProperty('volume', Math.max(0, current - 10));
         });
+        console.log(`Shortcut volumeDown (${shortcuts.volumeDown}): ${success ? 'registered' : 'FAILED'}`);
     }
 
     if (shortcuts.kvmSwitch) {
-        globalShortcut.register(shortcuts.kvmSwitch, () => {
+        const success = globalShortcut.register(shortcuts.kvmSwitch, () => {
             const current = store.get('kvm', 0);
             const newValue = current === 0 ? 1 : 0;
             setProperty('kvm-switch', newValue);
             store.set('kvm', newValue);
         });
+        console.log(`Shortcut kvmSwitch (${shortcuts.kvmSwitch}): ${success ? 'registered' : 'FAILED'}`);
     }
 }
 
