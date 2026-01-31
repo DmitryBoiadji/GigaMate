@@ -30,7 +30,7 @@ const defaultSettings = {
     },
     api: {
         enabled: true,
-        port: 3000
+        port: 3003
     },
     defaults: {
         brightness: 50,
