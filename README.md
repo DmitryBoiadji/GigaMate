@@ -9,11 +9,13 @@ The application provides a simple interface to adjust brightness.
 
 ![Brightness](images/brightness.gif)
 
-- **Tray Icon**: Access the utility from the macOS tray.
-- **Monitor Control**: Adjust brightness.
-- **Global Shortcuts**: Use keyboard shortcuts to adjust brightness.
-- **Startup**: Runs app login.
-- **Express Server**: Control the monitor settings via HTTP requests, for example from [HomeAssistant](https://www.home-assistant.io/).
+- **Tray Icon**: Access the utility from the system tray (macOS, Linux, Windows).
+- **Monitor Control**: Adjust brightness, contrast, and volume.
+- **KVM Switch**: Toggle KVM input via keyboard shortcut.
+- **Global Shortcuts**: Configurable keyboard shortcuts for all controls.
+- **Settings**: Easy configuration with autosave - changes apply instantly.
+- **Startup**: Option to run at login.
+- **HTTP API**: Control the monitor via REST API, for example from [HomeAssistant](https://www.home-assistant.io/).
 
 
 ## Capable models*
@@ -46,24 +48,35 @@ _* Probably all Gigabyte monitors that uses a Realtek HID device to control it o
 
 ### Global Shortcuts
 
-- **Increase Brightness**: `Alt+CommandOrControl+Shift+=`
-- **Decrease Brightness**: `Alt+CommandOrControl+Shift+-`
-- 
+Default shortcuts (configurable in Settings):
+
+- **Brightness Up**: `Alt+Cmd/Ctrl+Shift+=`
+- **Brightness Down**: `Alt+Cmd/Ctrl+Shift+-`
+- **Contrast Up/Down**: Not set by default
+- **Volume Up/Down**: Not set by default
+- **KVM Switch**: Not set by default
+
 ### Tray Menu
 
+- **Settings**: Open the settings window.
 - **Quit**: Exit the application.
 
 
 ### HTTP API
 
-The application runs an Express server on port `3000` to accept HTTP requests for monitor settings.
+The application runs an Express server on port `3003` (configurable in settings) to accept HTTP requests for monitor settings.
 
-- **Set Brightness**:
+- **Get current values**:
+    ```http
+    GET /monitor-settings
+    ```
+
+- **Set values** (all parameters optional):
     ```http
     POST /monitor-settings
-    Content-Type: application/x-www-form-urlencoded
+    Content-Type: application/json
 
-    brightness=<value>
+    {"brightness": 50, "contrast": 50, "volume": 30, "kvm": 0}
     ```
 HomeAssistant rest example can be found [here](hass/rest.yaml).  
 
