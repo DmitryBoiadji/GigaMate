@@ -20,11 +20,12 @@ The application provides a simple interface to adjust brightness.
 
 ## Capable models*
 
+* Gigabyte M32U
 * Gigabyte M32Q
-* Gigabyte M32U _(not confirmed)_
-* Gigabyte M28U _(not confirmed)_
+* Gigabyte M32QC
+* Gigabyte M28UC
+* Gigabyte M27Q
 
-_* Probably all Gigabyte monitors that uses a Realtek HID device to control it over OSD sidekick should have the same protocol_
 
 ## Installation
 
