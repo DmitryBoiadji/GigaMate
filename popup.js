@@ -61,7 +61,7 @@ const statusText = document.getElementById('status-text');
 
 function renderStatus(connected) {
     status.classList.toggle('connected', connected);
-    statusText.textContent = connected ? 'Monitor connected' : 'Monitor not found';
+    statusText.textContent = connected ? 'Connected' : 'Not connected';
 }
 
 on('init-values', data => {

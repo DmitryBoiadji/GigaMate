@@ -14,8 +14,6 @@
     --button-bg: #ffffff;
     --button-border: rgba(0, 0, 0, 0.12);
     --fallback-bg: #ececec;
-    --status-on: #34c759;
-    --status-off: rgba(0, 0, 0, 0.25);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,8 +30,6 @@
         --button-bg: rgba(255, 255, 255, 0.14);
         --button-border: rgba(255, 255, 255, 0.08);
         --fallback-bg: #2b2b2b;
-        --status-on: #30d158;
-        --status-off: rgba(255, 255, 255, 0.3);
     }
 }
 
@@ -181,30 +177,34 @@ body {
     outline-offset: 0;
 }
 
-.footer {
+/* Control Center style toggle: accent circle when the monitor is connected, gray otherwise */
+.status-main {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 2px 0 6px;
+    gap: 10px;
 }
 
-.status {
+.status-icon {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text-secondary);
-}
-
-.status-dot {
-    width: 7px;
-    height: 7px;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: var(--status-off);
+    background: var(--track);
+    color: var(--icon);
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
-.status.connected .status-dot {
-    background: var(--status-on);
+.status-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+}
+
+#status.connected .status-icon {
+    background: AccentColor;
+    color: #ffffff;
 }
 
 .icon-button {
@@ -237,4 +237,8 @@ body {
 
 .icon-button:focus-visible {
     outline: 2px solid color-mix(in srgb, AccentColor 45%, transparent);
+}
+
+#status {
+    margin-bottom: 0;
 }

@@ -60,18 +60,26 @@
     <button class="push-button" id="kvm-switch">Switch</button>
 </section>
 
-<footer class="footer">
-    <span class="status" id="status" role="status">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span id="status-text">Looking for monitor…</span>
-    </span>
+<section class="module module-row" id="status">
+    <div class="status-main">
+        <span class="status-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+                <rect x="1.75" y="2.75" width="12.5" height="8" rx="1.25" fill="none" stroke-width="1.5"/>
+                <path d="M6 13.5h4M8 11v2.5" fill="none" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+        </span>
+        <div>
+            <div class="module-title">Monitor</div>
+            <div class="module-subtitle" id="status-text" role="status">Searching…</div>
+        </div>
+    </div>
     <button class="icon-button" id="open-settings" aria-label="Settings" title="Settings">
         <svg viewBox="0 0 16 16" aria-hidden="true">
             <circle cx="8" cy="8" r="6.2" fill="none" stroke-width="2.2" stroke-dasharray="2.43 2.44"/>
             <circle cx="8" cy="8" r="4.2" fill="none" stroke-width="2.2"/>
         </svg>
     </button>
-</footer>
+</section>
 
 <script src="popup.js"></script>
 

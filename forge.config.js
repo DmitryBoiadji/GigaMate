@@ -80,8 +80,7 @@ module.exports = {
             [FuseV1Options.EnableNodeCliInspectArguments]: false,
             [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
             [FuseV1Options.OnlyLoadAppFromAsar]: true,
-            // The UI is loaded with loadFile and needs no extra file:// privileges
-            [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
+            // GrantFileProtocolExtraPrivileges stays enabled: without it file:// cannot read the UI from app.asar
         }),
     ],
 };

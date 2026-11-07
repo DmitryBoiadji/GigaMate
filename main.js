@@ -344,7 +344,7 @@ const contextMenu = Menu.buildFromTemplate([
 const mb = menubar({
     browserWindow: {
         width: 300,
-        height: 304,
+        height: 324,
         resizable: false,
         // Native translucent popover background on macOS, follows the system theme
         ...(isMac && {
