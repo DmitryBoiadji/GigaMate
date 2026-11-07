@@ -15,7 +15,6 @@ The application provides a simple interface to adjust brightness.
 - **Global Shortcuts**: Configurable keyboard shortcuts for all controls.
 - **Settings**: Easy configuration with autosave - changes apply instantly.
 - **Startup**: Option to run at login.
-- **HTTP API**: Control the monitor via REST API, for example from [HomeAssistant](https://www.home-assistant.io/).
 
 
 ## Capable models*
@@ -77,27 +76,6 @@ Default shortcuts (configurable in Settings):
 - **Quit**: Exit the application.
 
 
-### HTTP API
-
-The application runs an Express server on port `3003` (configurable in settings) to accept HTTP requests for monitor settings.
-
-- **Get current values**:
-    ```http
-    GET /monitor-settings
-    ```
-
-- **Set values** (all parameters optional):
-    ```http
-    POST /monitor-settings
-    Content-Type: application/json
-
-    {"brightness": 50, "contrast": 50, "volume": 30, "kvm": 0}
-    ```
-HomeAssistant rest example can be found [here](hass/rest.yaml).  
-
-![Brightness](images/hass.png)
-
-
 ## TO-DO
 
 Add issues with links
@@ -121,7 +99,6 @@ Big thanks to @kelvie for reverse engineering the OSD Sidekick protocol!
 
 - [Electron](https://www.electronjs.org/)
 - [Node-HID](https://github.com/node-hid/node-hid)
-- [Express](https://expressjs.com/)
 
 ---
 

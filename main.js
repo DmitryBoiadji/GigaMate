@@ -1,10 +1,7 @@
 const {app, Menu, ipcMain, globalShortcut, Notification, BrowserWindow} = require('electron')
 const {menubar} = require('menubar');
-const Store = require('electron-store');
+const {default: Store} = require('electron-store');
 const store = new Store();
-const express = require('express');
-const expressApp = express();
-const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -12,8 +9,13 @@ const os = require('os');
 const iconPath = path.join(__dirname, 'images', 'icon@2x.png');
 const debug = false;
 
+// The UI is a few static controls, so the GPU process is not worth its memory
+app.disableHardwareAcceleration();
+
+// The app lives in the tray, so it must keep running with no windows open
+app.on('window-all-closed', () => {});
+
 let settingsWindow = null;
-let httpServer = null;
 
 // Default settings
 const defaultSettings = {
@@ -29,10 +31,6 @@ const defaultSettings = {
     startup: {
         openAtLogin: false,
         startHidden: true
-    },
-    api: {
-        enabled: true,
-        port: 3003
     },
     defaults: {
         brightness: 50,
@@ -235,11 +233,6 @@ mb.on('ready', () => {
             setShortcuts();
         }
 
-        // Restart HTTP server if port changed
-        if (oldSettings.api.port !== newSettings.api.port || oldSettings.api.enabled !== newSettings.api.enabled) {
-            restartHttpServer();
-        }
-
         event.reply('settings-saved');
     });
 
@@ -256,6 +249,11 @@ mb.on('ready', () => {
         mb.tray.popUpContextMenu(contextMenu);
     });
 
+    // Free the renderer while the popup is hidden; menubar recreates it on the next click
+    mb.on('after-hide', () => {
+        if (mb.window) mb.window.close();
+    });
+
     setShortcuts();
 
     // Apply startup settings on app start
@@ -265,7 +263,6 @@ mb.on('ready', () => {
     }
 
     connectToDevice();
-    startHttpServer();
 });
 
 function setShortcuts() {
@@ -330,94 +327,6 @@ function setShortcuts() {
         console.log(`Shortcut kvmSwitch (${shortcuts.kvmSwitch}): ${success ? 'registered' : 'FAILED'}`);
     }
 }
-
-// HTTP API
-expressApp.use(bodyParser.urlencoded({extended: false}));
-expressApp.use(bodyParser.json());
-
-function startHttpServer() {
-    const settings = getSettings();
-    if (!settings.api.enabled) return;
-
-    httpServer = expressApp.listen(settings.api.port, () => {
-        console.log(`Server running on port ${settings.api.port}`);
-    });
-}
-
-function restartHttpServer() {
-    if (httpServer) {
-        httpServer.close(() => {
-            startHttpServer();
-        });
-    } else {
-        startHttpServer();
-    }
-}
-
-// GET current monitor settings
-expressApp.get('/monitor-settings', (req, res) => {
-    const settings = getSettings();
-    res.json({
-        brightness: store.get('brightness', settings.defaults.brightness),
-        contrast: store.get('contrast', settings.defaults.contrast),
-        volume: store.get('volume', settings.defaults.volume),
-        kvm: store.get('kvm', 0)
-    });
-});
-
-// POST to update monitor settings
-expressApp.post('/monitor-settings', (req, res) => {
-    const {brightness, contrast, volume, kvm} = req.body;
-    const results = {};
-    const errors = [];
-
-    if (brightness !== undefined) {
-        const val = parseInt(brightness);
-        if (isNaN(val) || val < 0 || val > 100) {
-            errors.push('brightness must be 0-100');
-        } else {
-            setProperty('brightness', val);
-            results.brightness = val;
-        }
-    }
-
-    if (contrast !== undefined) {
-        const val = parseInt(contrast);
-        if (isNaN(val) || val < 0 || val > 100) {
-            errors.push('contrast must be 0-100');
-        } else {
-            setProperty('contrast', val);
-            results.contrast = val;
-        }
-    }
-
-    if (volume !== undefined) {
-        const val = parseInt(volume);
-        if (isNaN(val) || val < 0 || val > 100) {
-            errors.push('volume must be 0-100');
-        } else {
-            setProperty('volume', val);
-            results.volume = val;
-        }
-    }
-
-    if (kvm !== undefined) {
-        const val = parseInt(kvm);
-        if (isNaN(val) || (val !== 0 && val !== 1)) {
-            errors.push('kvm must be 0 or 1');
-        } else {
-            setProperty('kvm-switch', val);
-            store.set('kvm', val);
-            results.kvm = val;
-        }
-    }
-
-    if (errors.length > 0) {
-        res.status(400).json({errors, applied: results});
-    } else {
-        res.json({success: true, applied: results});
-    }
-});
 
 if (debug) {
     mb.on('after-create-window', devMode)

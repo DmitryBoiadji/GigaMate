@@ -73,22 +73,6 @@
 </div>
 
 <div class="section">
-    <div class="section-title">HTTP API</div>
-
-    <div class="setting-row">
-        <span class="setting-label">Enable API</span>
-        <div class="toggle-wrapper">
-            <div class="toggle" id="apiEnabled"></div>
-        </div>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Port</span>
-        <input type="number" class="number-input" id="apiPort" min="1024" max="65535">
-    </div>
-</div>
-
-<div class="section">
     <div class="section-title">Default Values</div>
 
     <div class="setting-row">
@@ -132,8 +116,6 @@
     const elements = {
         openAtLogin: document.getElementById('openAtLogin'),
         startHidden: document.getElementById('startHidden'),
-        apiEnabled: document.getElementById('apiEnabled'),
-        apiPort: document.getElementById('apiPort'),
         defaultBrightness: document.getElementById('defaultBrightness'),
         defaultContrast: document.getElementById('defaultContrast'),
         defaultVolume: document.getElementById('defaultVolume')
@@ -159,10 +141,6 @@
         // Startup
         elements.openAtLogin.checked = settings.startup.openAtLogin;
         elements.startHidden.checked = settings.startup.startHidden;
-
-        // API
-        elements.apiEnabled.classList.toggle('active', settings.api.enabled);
-        elements.apiPort.value = settings.api.port;
 
         // Defaults
         elements.defaultBrightness.value = settings.defaults.brightness;
@@ -255,12 +233,6 @@
         });
     });
 
-    // Toggle
-    elements.apiEnabled.addEventListener('click', function() {
-        this.classList.toggle('active');
-        autoSave();
-    });
-
     // Autosave functionality
     let saveTimeout = null;
     const saveIndicator = document.getElementById('saveIndicator');
@@ -281,10 +253,6 @@
             startup: {
                 openAtLogin: elements.openAtLogin.checked,
                 startHidden: elements.startHidden.checked
-            },
-            api: {
-                enabled: elements.apiEnabled.classList.contains('active'),
-                port: parseInt(elements.apiPort.value) || 3003
             },
             defaults: {
                 brightness: parseInt(elements.defaultBrightness.value) || 50,
@@ -315,8 +283,6 @@
     // Add change listeners for autosave
     elements.openAtLogin.addEventListener('change', autoSave);
     elements.startHidden.addEventListener('change', autoSave);
-    elements.apiPort.addEventListener('change', autoSave);
-    elements.apiPort.addEventListener('input', autoSave);
     elements.defaultBrightness.addEventListener('change', autoSave);
     elements.defaultBrightness.addEventListener('input', autoSave);
     elements.defaultContrast.addEventListener('change', autoSave);

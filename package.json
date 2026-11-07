@@ -6,17 +6,17 @@
   "author": "Dmitry Boiadji",
   "license": "MIT",
   "devDependencies": {
-    "@electron-forge/cli": "^7.4.0",
-    "@electron-forge/maker-deb": "^7.4.0",
-    "@electron-forge/maker-rpm": "^7.4.0",
-    "@electron-forge/maker-squirrel": "^7.4.0",
-    "@electron-forge/maker-zip": "^7.4.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
-    "@electron-forge/plugin-fuses": "^7.4.0",
-    "@electron-forge/publisher-github": "^7.4.0",
-    "@electron/fuses": "^1.8.0",
-    "electron": "^30.0.1",
-    "env-cmd": "^10.1.0"
+    "@electron-forge/cli": "^8.0.1",
+    "@electron-forge/maker-deb": "^8.0.1",
+    "@electron-forge/maker-rpm": "^8.0.1",
+    "@electron-forge/maker-squirrel": "^8.0.1",
+    "@electron-forge/maker-zip": "^8.0.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^8.0.1",
+    "@electron-forge/plugin-fuses": "^8.0.1",
+    "@electron-forge/publisher-github": "^8.0.1",
+    "@electron/fuses": "^2.1.3",
+    "electron": "^45.2.3",
+    "env-cmd": "^11.0.0"
   },
   "scripts": {
     "rebuild": "electron-rebuild",
@@ -24,17 +24,15 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "pub": "env-cmd electron-forge publish",
-    "pub-all": "env-cmd electron-forge publish --platform win32 linux darwin"
+    "pub": "env-cmd -- electron-forge publish",
+    "pub-all": "env-cmd -- electron-forge publish --platform win32 linux darwin"
   },
   "dependencies": {
-    "@electron-forge/maker-flatpak": "^7.4.0",
-    "body-parser": "^1.20.4",
+    "@electron-forge/maker-flatpak": "^8.0.1",
     "electron-squirrel-startup": "^1.0.1",
-    "electron-store": "^8.2.0",
-    "express": "^4.22.1",
-    "menubar": "^9.0.0",
-    "node-hid": "^3.0.0",
-    "socket.io-client": "^4.7.5"
+    "electron-store": "^12.0.0",
+    "menubar": "^9.5.3",
+    "node-hid": "^3.4.0",
+    "socket.io-client": "^4.8.4"
   }
 }

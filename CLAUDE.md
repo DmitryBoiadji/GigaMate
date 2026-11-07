@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GigaMate is an Electron-based desktop tray utility for controlling Gigabyte monitors via HID protocol. It provides brightness control through a tray icon, keyboard shortcuts, and an HTTP REST API for HomeAssistant integration.
+GigaMate is an Electron-based desktop tray utility for controlling Gigabyte monitors via HID protocol. It provides monitor control through a tray icon and keyboard shortcuts.
 
 ## Build & Development Commands
 
@@ -24,7 +24,6 @@ The application consists of two Electron processes:
 
 **Main Process (main.js):**
 - HID device communication with Realtek-based Gigabyte monitors (VendorID: 0x0bda, ProductID: 0x1100)
-- Express server on port 3000 with POST `/monitor-settings` endpoint
 - Global keyboard shortcuts: `Alt+Cmd/Ctrl+Shift+=` (brightness up), `Alt+Cmd/Ctrl+Shift+-` (brightness down)
 - Tray icon via `menubar` package
 - Settings persistence via `electron-store`
@@ -51,5 +50,4 @@ Monitor communication uses a custom 193-byte buffer protocol (reverse-engineered
 
 - `node-hid` - Hardware device communication
 - `menubar` - Tray icon wrapper
-- `express` - REST API server
 - `electron-store` - Persistent settings storage
