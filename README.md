@@ -15,6 +15,7 @@ It adjusts brightness, contrast, volume and the KVM switch right from the menu b
 - **Tray Icon**: Monochrome menu bar icon on macOS that adapts to light and dark menu bars (system tray on Linux and Windows).
 - **Monitor Control**: Adjust brightness, contrast, and volume from a Control Center style popup.
 - **KVM Switch**: Toggle KVM input from the popup or via keyboard shortcut.
+- **Connection Status**: The popup shows whether the monitor is connected; the gear button opens Settings.
 - **Global Shortcuts**: Configurable keyboard shortcuts for all controls.
 - **Appearance**: Follows the system theme, or force light or dark in Settings.
 - **Settings**: Easy configuration with autosave - changes apply instantly.

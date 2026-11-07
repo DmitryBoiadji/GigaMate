@@ -1,49 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3a3f4b"/>
-      <stop offset="1" stop-color="#16181d"/>
-    </linearGradient>
-    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffb347"/>
-      <stop offset="0.55" stop-color="#ff6a3d"/>
-      <stop offset="1" stop-color="#7b5cff"/>
-    </linearGradient>
-    <linearGradient id="bezel" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#f4f5f7"/>
-      <stop offset="1" stop-color="#c9ccd3"/>
-    </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity="0.35"/>
-    </filter>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="10"/>
-    </filter>
-  </defs>
-  <!-- macOS icon grid: 824px rounded square centered on a 1024px canvas -->
-  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)" filter="url(#shadow)"/>
-  <rect x="100.5" y="100.5" width="823" height="823" rx="184.5" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
-  <!-- Stand -->
-  <path d="M462 676 h100 l18 92 h-136 z" fill="url(#bezel)"/>
-  <rect x="392" y="760" width="240" height="30" rx="15" fill="url(#bezel)"/>
-  <!-- Monitor -->
-  <g filter="url(#shadow)">
-    <rect x="216" y="262" width="592" height="420" rx="44" fill="url(#bezel)"/>
-  </g>
-  <rect x="244" y="290" width="536" height="364" rx="22" fill="url(#screen)"/>
-  <!-- Brightness symbol -->
-  <g transform="translate(512 472)" fill="#ffffff">
-    <circle r="78" opacity="0.5" filter="url(#glow)"/>
-    <circle r="62"/>
-    <g stroke="#ffffff" stroke-width="26" stroke-linecap="round">
-      <line x1="0" y1="-104" x2="0" y2="-138"/>
-      <line x1="0" y1="104" x2="0" y2="138"/>
-      <line x1="-104" y1="0" x2="-138" y2="0"/>
-      <line x1="104" y1="0" x2="138" y2="0"/>
-      <line x1="-73.5" y1="-73.5" x2="-97.6" y2="-97.6"/>
-      <line x1="73.5" y1="73.5" x2="97.6" y2="97.6"/>
-      <line x1="-73.5" y1="73.5" x2="-97.6" y2="97.6"/>
-      <line x1="73.5" y1="-73.5" x2="97.6" y2="-97.6"/>
-    </g>
-  </g>
-</svg>
+<!-- Source of the app icon. Rendered with Chromium (the "G" uses the system font), then exported to icns/ico/png. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><defs>
+<linearGradient id="bgLight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f8fa"/><stop offset="1" stop-color="#d6d9e0"/></linearGradient>
+<linearGradient id="bodyLight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a5e68"/><stop offset="1" stop-color="#2a2d33"/></linearGradient>
+<linearGradient id="bgDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3f4b"/><stop offset="1" stop-color="#121418"/></linearGradient>
+<linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2c31"/><stop offset="1" stop-color="#0c0d0f"/></linearGradient>
+<linearGradient id="orangeL" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#fff1d6"/><stop offset="0.35" stop-color="#ff8a1f"/><stop offset="1" stop-color="#ff5a00" stop-opacity="0.55"/></linearGradient>
+<linearGradient id="orangeR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff1d6"/><stop offset="0.35" stop-color="#ff8a1f"/><stop offset="1" stop-color="#ff5a00" stop-opacity="0.55"/></linearGradient>
+<radialGradient id="screenWarm" cx="0.5" cy="0.52" r="0.7"><stop offset="0" stop-color="#ff9a3c"/><stop offset="0.6" stop-color="#e2510f"/><stop offset="1" stop-color="#5a1c06"/></radialGradient>
+<linearGradient id="stroke" gradientUnits="userSpaceOnUse" x1="206" y1="262" x2="818" y2="830"><stop offset="0" stop-color="#ffa03a"/><stop offset="0.5" stop-color="#ff6a1a"/><stop offset="1" stop-color="#38d6ff"/></linearGradient>
+<clipPath id="screenClip"><rect x="206" y="262" width="612" height="344" rx="6"/></clipPath>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12"/></filter>
+<filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity="0.3"/></filter>
+<linearGradient id="screenDuo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a3c"/><stop offset="0.5" stop-color="#e2510f"/><stop offset="1" stop-color="#1fa9d6"/></linearGradient>
+<linearGradient id="gText" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ffe2c4"/></linearGradient></defs><rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bgDark)" filter="url(#shadow)"/>
+<rect x="101" y="101" width="822" height="822" rx="184" fill="none" stroke="#fff" stroke-opacity="0.1" stroke-width="2"/><g filter="url(#shadow)">
+  <path d="M498 640 h28 v120 h-28 z" fill="url(#bodyLight)"/>
+  <rect x="506" y="672" width="12" height="52" rx="6" fill="#1a1c20"/>
+  <path d="M512 752 L296 822 Q286 826 296 830 L330 834 L512 786 L694 834 L728 830 Q738 826 728 822 Z" fill="url(#bodyLight)"/>
+  <rect x="196" y="252" width="632" height="378" rx="10" fill="url(#body)" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3"/>
+  <rect x="490" y="612" width="44" height="8" rx="2" fill="#4a4d55"/>
+</g><g clip-path="url(#screenClip)"><rect x="206" y="262" width="612" height="344" fill="url(#screenWarm)"/><text x="512" y="528" text-anchor="middle" font-family="-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" font-weight="800" font-size="260" fill="url(#gText)">G</text><text x="512" y="528" text-anchor="middle" font-family="-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" font-weight="800" font-size="260" fill="#fff" opacity="0.5" filter="url(#glow)">G</text></g></svg>

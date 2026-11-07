@@ -60,9 +60,18 @@
     <button class="push-button" id="kvm-switch">Switch</button>
 </section>
 
-<div class="separator"></div>
-
-<button class="menu-item" id="open-settings">Settings…</button>
+<footer class="footer">
+    <span class="status" id="status" role="status">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="status-text">Looking for monitor…</span>
+    </span>
+    <button class="icon-button" id="open-settings" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.2" fill="none" stroke-width="2.2" stroke-dasharray="2.43 2.44"/>
+            <circle cx="8" cy="8" r="4.2" fill="none" stroke-width="2.2"/>
+        </svg>
+    </button>
+</footer>
 
 <script src="popup.js"></script>
 

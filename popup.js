@@ -56,10 +56,19 @@ kvmSwitch.addEventListener('click', () => {
     send('kvm-toggle');
 });
 
+const status = document.getElementById('status');
+const statusText = document.getElementById('status-text');
+
+function renderStatus(connected) {
+    status.classList.toggle('connected', connected);
+    statusText.textContent = connected ? 'Monitor connected' : 'Monitor not found';
+}
+
 on('init-values', data => {
     names.forEach(name => {
         if (Number.isInteger(data[name])) render(name, data[name]);
     });
+    if (typeof data.connected === 'boolean') renderStatus(data.connected);
 });
 
 send('request-values');

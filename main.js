@@ -380,7 +380,8 @@ function currentValues() {
         brightness: getValue('brightness'),
         contrast: getValue('contrast'),
         volume: getValue('volume'),
-        kvm: getValue('kvm')
+        kvm: getValue('kvm'),
+        connected: dev !== null
     };
 }
 
@@ -423,6 +424,7 @@ function closeDevice() {
         // The handle is already unusable; nothing else to clean up
     }
     dev = null;
+    sendValuesToPopup();
 }
 
 // Only one reconnect loop may run at a time. The delay backs off so an absent monitor
@@ -445,6 +447,7 @@ function openDevice() {
         if (!info) throw new Error('monitor not found');
         closeDevice();
         dev = new HID.HID(info.path);
+        sendValuesToPopup();
         cancelReconnect();
         reconnectDelay = RECONNECT_DELAY_MS;
         console.log('Monitor connected');
