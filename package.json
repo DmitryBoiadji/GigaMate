@@ -28,11 +28,9 @@
     "pub-all": "env-cmd -- electron-forge publish --platform win32 linux darwin"
   },
   "dependencies": {
-    "@electron-forge/maker-flatpak": "^8.0.1",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^12.0.0",
     "menubar": "^9.5.3",
-    "node-hid": "^3.4.0",
-    "socket.io-client": "^4.8.4"
+    "node-hid": "^3.4.0"
   }
 }

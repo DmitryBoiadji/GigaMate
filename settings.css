@@ -1,296 +1,270 @@
+/* Settings window styled after macOS System Settings. Colors follow the system theme. */
+
+:root {
+    color-scheme: light dark;
+    --text: rgba(0, 0, 0, 0.85);
+    --text-secondary: rgba(0, 0, 0, 0.5);
+    --text-tertiary: rgba(0, 0, 0, 0.3);
+    --group-bg: rgba(255, 255, 255, 0.6);
+    --group-border: rgba(0, 0, 0, 0.07);
+    --separator: rgba(0, 0, 0, 0.08);
+    --field-bg: #ffffff;
+    --field-border: rgba(0, 0, 0, 0.15);
+    --switch-off: rgba(0, 0, 0, 0.12);
+    --clear-bg: rgba(0, 0, 0, 0.25);
+    --segment-selected: #ffffff;
+    --fallback-bg: #ececec;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: rgba(255, 255, 255, 0.9);
+        --text-secondary: rgba(255, 255, 255, 0.55);
+        --text-tertiary: rgba(255, 255, 255, 0.3);
+        --group-bg: rgba(255, 255, 255, 0.05);
+        --group-border: rgba(255, 255, 255, 0.07);
+        --separator: rgba(255, 255, 255, 0.08);
+        --field-bg: rgba(255, 255, 255, 0.08);
+        --field-border: rgba(255, 255, 255, 0.1);
+        --switch-off: rgba(255, 255, 255, 0.16);
+        --clear-bg: rgba(255, 255, 255, 0.3);
+        --segment-selected: rgba(255, 255, 255, 0.24);
+        --fallback-bg: #1e1e1e;
+    }
+}
+
 * {
     box-sizing: border-box;
 }
 
+html, body {
+    margin: 0;
+    /* Transparent so the native vibrancy shows through on macOS */
+    background: transparent;
+    /* The window is sized to its content, so never show scrollbars */
+    overflow: hidden;
+}
+
+/* Windows and Linux have no vibrancy, so use a solid background there */
+html:not(.platform-darwin) body {
+    background: var(--fallback-bg);
+}
+
 body {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 13px;
-    margin: 0;
-    padding: 20px;
-    background: linear-gradient(145deg, #1a1a1a 0%, #252525 100%);
-    color: #e0e0e0;
-    min-height: 100vh;
+    color: var(--text);
+    padding: 6px 20px 14px;
 }
 
-h1 {
-    font-size: 20px;
-    margin: 0 0 20px 0;
+.group-title {
+    font-size: 13px;
     font-weight: 600;
-    color: #fff;
-    letter-spacing: -0.3px;
+    margin: 14px 0 6px 2px;
 }
 
-.section {
-    background: linear-gradient(145deg, #2a2a2a 0%, #222 100%);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+.group {
+    background: var(--group-bg);
+    border: 0.5px solid var(--group-border);
+    border-radius: 10px;
+    padding: 0 12px;
 }
 
-.section-title {
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 14px;
-    color: #888;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.setting-row {
+.row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
-    padding: 8px 0;
-    border-radius: 6px;
-    transition: background 0.2s ease;
+    min-height: 38px;
+    padding: 6px 0;
 }
 
-.setting-row:last-child {
-    margin-bottom: 0;
+.row + .row {
+    border-top: 0.5px solid var(--separator);
 }
 
-.setting-row:hover {
-    background: rgba(255, 255, 255, 0.02);
-    margin-left: -8px;
-    margin-right: -8px;
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-.setting-label {
+.row-label {
     flex: 1;
-    color: #ccc;
-    font-weight: 400;
+}
+
+/* Shortcut recorder: a field with an inline clear button */
+.recorder {
+    position: relative;
+    width: 150px;
 }
 
 .shortcut-input {
-    width: 180px;
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    font-size: 12px;
+    width: 100%;
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 1px;
     text-align: center;
-    background: linear-gradient(145deg, #333 0%, #2a2a2a 100%);
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.shortcut-input:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    background: linear-gradient(145deg, #3a3a3a 0%, #303030 100%);
-}
-
-.shortcut-input:focus {
+    color: var(--text);
+    background: var(--field-bg);
+    border: 0.5px solid var(--field-border);
+    border-radius: 6px;
+    padding: 3px 24px;
     outline: none;
-    border-color: #4a9eff;
-    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2),
-                inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    cursor: default;
+    box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.06);
 }
 
-.shortcut-input.recording {
-    border-color: #ff9500;
-    background: linear-gradient(145deg, #4a3a20 0%, #3a2a10 100%);
-    animation: pulse 1.5s ease-in-out infinite;
+.shortcut-input::placeholder {
+    color: var(--text-tertiary);
+    letter-spacing: 0;
 }
 
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2); }
-    50% { box-shadow: 0 0 0 5px rgba(255, 149, 0, 0.3); }
+.recorder.recording .shortcut-input {
+    color: var(--text-secondary);
+    letter-spacing: 0;
+    box-shadow: 0 0 0 3px color-mix(in srgb, AccentColor 40%, transparent);
+    border-color: AccentColor;
 }
 
-.shortcut-input.empty {
-    color: #666;
-    font-style: italic;
+.clear-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--clear-bg);
+    color: var(--fallback-bg);
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
 }
 
-.checkbox-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.clear-btn:hover {
+    filter: brightness(0.85);
 }
 
-.checkbox-wrapper input[type="checkbox"] {
+.recorder.empty .clear-btn {
+    display: none;
+}
+
+/* macOS-style switch */
+.switch {
     -webkit-appearance: none;
     appearance: none;
-    width: 18px;
+    position: relative;
+    width: 32px;
     height: 18px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    background: linear-gradient(145deg, #333 0%, #2a2a2a 100%);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    margin: 0;
+    border-radius: 9px;
+    background: var(--switch-off);
+    transition: background 0.2s ease;
+    outline: none;
+}
+
+.switch::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease;
+}
+
+.switch:checked {
+    background: AccentColor;
+}
+
+.switch:checked::after {
+    transform: translateX(14px);
+}
+
+.switch:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, AccentColor 40%, transparent);
+}
+
+/* macOS-style segmented control built from radio buttons */
+.segmented {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 7px;
+    background: var(--switch-off);
+}
+
+.segmented label {
     position: relative;
 }
 
-.checkbox-wrapper input[type="checkbox"]:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.checkbox-wrapper input[type="checkbox"]:checked {
-    background: linear-gradient(145deg, #5aacff 0%, #3d8ee6 100%);
-    border-color: transparent;
-}
-
-.checkbox-wrapper input[type="checkbox"]:checked::after {
-    content: '';
+.segmented input {
     position: absolute;
-    left: 5px;
-    top: 2px;
-    width: 5px;
-    height: 9px;
-    border: solid #fff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.segmented span {
+    display: block;
+    min-width: 54px;
+    padding: 2px 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text);
+}
+
+.segmented input:checked + span {
+    background: var(--segment-selected);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.segmented input:focus-visible + span {
+    outline: 2px solid color-mix(in srgb, AccentColor 45%, transparent);
 }
 
 .number-input {
-    width: 80px;
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 64px;
+    font: inherit;
+    font-size: 13px;
+    text-align: right;
+    color: var(--text);
+    background: var(--field-bg);
+    border: 0.5px solid var(--field-border);
     border-radius: 6px;
-    font-size: 12px;
-    text-align: center;
-    background: linear-gradient(145deg, #333 0%, #2a2a2a 100%);
-    color: #fff;
-    transition: all 0.2s ease;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.number-input:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    padding: 3px 8px;
+    outline: none;
+    box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.06);
 }
 
 .number-input:focus {
-    outline: none;
-    border-color: #4a9eff;
-    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2),
-                inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    border-color: AccentColor;
+    box-shadow: 0 0 0 3px color-mix(in srgb, AccentColor 40%, transparent);
 }
 
-/* Remove spinner arrows */
 .number-input::-webkit-inner-spin-button,
 .number-input::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-.button-row {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 12px;
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+.footer {
+    margin-top: 10px;
+    text-align: center;
 }
 
 .save-indicator {
-    font-size: 12px;
-    color: transparent;
+    font-size: 11px;
+    color: var(--text-tertiary);
     transition: color 0.2s ease;
-    margin-right: auto;
 }
 
 .save-indicator.saving {
-    color: #888;
+    color: var(--text-secondary);
 }
 
 .save-indicator.saved {
-    color: #5aacff;
-}
-
-.btn {
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-}
-
-.btn-secondary {
-    background: linear-gradient(145deg, #3d3d3d 0%, #333 100%);
-    color: #ccc;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.btn-secondary:hover {
-    background: linear-gradient(145deg, #4d4d4d 0%, #404040 100%);
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.btn-secondary:active {
-    transform: translateY(0);
-}
-
-.btn-primary {
-    background: linear-gradient(145deg, #5aacff 0%, #3d8ee6 100%);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(74, 158, 255, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.btn-primary:hover {
-    background: linear-gradient(145deg, #6bb8ff 0%, #4a9eff 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
-}
-
-.clear-btn {
-    padding: 6px 10px;
-    font-size: 11px;
-    font-weight: 500;
-    background: linear-gradient(145deg, #3a3a3a 0%, #303030 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    color: #999;
-    cursor: pointer;
-    margin-left: 8px;
-    transition: all 0.2s ease;
-}
-
-.clear-btn:hover {
-    background: linear-gradient(145deg, #4a4a4a 0%, #404040 100%);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
-}
-
-/* Selection color */
-::selection {
-    background: rgba(74, 158, 255, 0.4);
+    color: AccentColor;
 }

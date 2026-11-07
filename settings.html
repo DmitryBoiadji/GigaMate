@@ -3,302 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <title>GigaMate Settings</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'"/>
+    <meta name="color-scheme" content="light dark">
     <link rel="stylesheet" href="settings.css">
 </head>
 <body>
 
-<div class="section">
-    <div class="section-title">Keyboard Shortcuts</div>
-
-    <div class="setting-row">
-        <span class="setting-label">Brightness Up</span>
-        <input type="text" class="shortcut-input" id="shortcut-brightnessUp" readonly placeholder="Click to set">
-        <button class="clear-btn" data-shortcut="brightnessUp">Clear</button>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Brightness Down</span>
-        <input type="text" class="shortcut-input" id="shortcut-brightnessDown" readonly placeholder="Click to set">
-        <button class="clear-btn" data-shortcut="brightnessDown">Clear</button>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Contrast Up</span>
-        <input type="text" class="shortcut-input" id="shortcut-contrastUp" readonly placeholder="Click to set">
-        <button class="clear-btn" data-shortcut="contrastUp">Clear</button>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Contrast Down</span>
-        <input type="text" class="shortcut-input" id="shortcut-contrastDown" readonly placeholder="Click to set">
-        <button class="clear-btn" data-shortcut="contrastDown">Clear</button>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Volume Up</span>
-        <input type="text" class="shortcut-input" id="shortcut-volumeUp" readonly placeholder="Click to set">
-        <button class="clear-btn" data-shortcut="volumeUp">Clear</button>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Volume Down</span>
-        <input type="text" class="shortcut-input" id="shortcut-volumeDown" readonly placeholder="Click to set">
-        <button class="clear-btn" data-shortcut="volumeDown">Clear</button>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">KVM Switch</span>
-        <input type="text" class="shortcut-input" id="shortcut-kvmSwitch" readonly placeholder="Click to set">
-        <button class="clear-btn" data-shortcut="kvmSwitch">Clear</button>
-    </div>
-</div>
-
-<div class="section">
-    <div class="section-title">Startup</div>
-
-    <div class="setting-row">
-        <span class="setting-label">Open at login</span>
-        <div class="checkbox-wrapper">
-            <input type="checkbox" id="openAtLogin">
-        </div>
-    </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Start hidden</span>
-        <div class="checkbox-wrapper">
-            <input type="checkbox" id="startHidden">
+<div class="group-title">Appearance</div>
+<div class="group">
+    <div class="row">
+        <span class="row-label">Theme</span>
+        <div class="segmented" role="radiogroup" aria-label="Theme">
+            <label><input type="radio" name="theme" value="system"><span>Auto</span></label>
+            <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+            <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
         </div>
     </div>
 </div>
 
-<div class="section">
-    <div class="section-title">Default Values</div>
+<div class="group-title">Keyboard Shortcuts</div>
+<div class="group">
+    <div class="row">
+        <span class="row-label">Brightness Up</span>
+        <div class="recorder"><input type="text" class="shortcut-input" id="shortcut-brightnessUp" readonly placeholder="Record Shortcut"><button class="clear-btn" data-shortcut="brightnessUp" aria-label="Clear">✕</button></div>
+    </div>
+    <div class="row">
+        <span class="row-label">Brightness Down</span>
+        <div class="recorder"><input type="text" class="shortcut-input" id="shortcut-brightnessDown" readonly placeholder="Record Shortcut"><button class="clear-btn" data-shortcut="brightnessDown" aria-label="Clear">✕</button></div>
+    </div>
+    <div class="row">
+        <span class="row-label">Contrast Up</span>
+        <div class="recorder"><input type="text" class="shortcut-input" id="shortcut-contrastUp" readonly placeholder="Record Shortcut"><button class="clear-btn" data-shortcut="contrastUp" aria-label="Clear">✕</button></div>
+    </div>
+    <div class="row">
+        <span class="row-label">Contrast Down</span>
+        <div class="recorder"><input type="text" class="shortcut-input" id="shortcut-contrastDown" readonly placeholder="Record Shortcut"><button class="clear-btn" data-shortcut="contrastDown" aria-label="Clear">✕</button></div>
+    </div>
+    <div class="row">
+        <span class="row-label">Volume Up</span>
+        <div class="recorder"><input type="text" class="shortcut-input" id="shortcut-volumeUp" readonly placeholder="Record Shortcut"><button class="clear-btn" data-shortcut="volumeUp" aria-label="Clear">✕</button></div>
+    </div>
+    <div class="row">
+        <span class="row-label">Volume Down</span>
+        <div class="recorder"><input type="text" class="shortcut-input" id="shortcut-volumeDown" readonly placeholder="Record Shortcut"><button class="clear-btn" data-shortcut="volumeDown" aria-label="Clear">✕</button></div>
+    </div>
+    <div class="row">
+        <span class="row-label">KVM Switch</span>
+        <div class="recorder"><input type="text" class="shortcut-input" id="shortcut-kvmSwitch" readonly placeholder="Record Shortcut"><button class="clear-btn" data-shortcut="kvmSwitch" aria-label="Clear">✕</button></div>
+    </div>
+</div>
 
-    <div class="setting-row">
-        <span class="setting-label">Brightness</span>
+<div class="group-title">Startup</div>
+<div class="group">
+    <label class="row">
+        <span class="row-label">Open at login</span>
+        <input type="checkbox" class="switch" id="openAtLogin">
+    </label>
+</div>
+
+<div class="group-title">Default Values</div>
+<div class="group">
+    <div class="row">
+        <span class="row-label">Brightness</span>
         <input type="number" class="number-input" id="defaultBrightness" min="0" max="100">
     </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Contrast</span>
+    <div class="row">
+        <span class="row-label">Contrast</span>
         <input type="number" class="number-input" id="defaultContrast" min="0" max="100">
     </div>
-
-    <div class="setting-row">
-        <span class="setting-label">Volume</span>
+    <div class="row">
+        <span class="row-label">Volume</span>
         <input type="number" class="number-input" id="defaultVolume" min="0" max="100">
     </div>
 </div>
 
-<div class="button-row">
-    <span class="save-indicator" id="saveIndicator"></span>
-    <button class="btn btn-secondary" id="closeBtn">Close</button>
+<div class="footer">
+    <span class="save-indicator" id="saveIndicator">Changes are saved automatically</span>
 </div>
 
-<script>
-    const {ipcRenderer} = require('electron');
-
-    let currentSettings = null;
-    let recordingInput = null;
-
-    // DOM elements
-    const shortcutInputs = {
-        brightnessUp: document.getElementById('shortcut-brightnessUp'),
-        brightnessDown: document.getElementById('shortcut-brightnessDown'),
-        contrastUp: document.getElementById('shortcut-contrastUp'),
-        contrastDown: document.getElementById('shortcut-contrastDown'),
-        volumeUp: document.getElementById('shortcut-volumeUp'),
-        volumeDown: document.getElementById('shortcut-volumeDown'),
-        kvmSwitch: document.getElementById('shortcut-kvmSwitch')
-    };
-
-    const elements = {
-        openAtLogin: document.getElementById('openAtLogin'),
-        startHidden: document.getElementById('startHidden'),
-        defaultBrightness: document.getElementById('defaultBrightness'),
-        defaultContrast: document.getElementById('defaultContrast'),
-        defaultVolume: document.getElementById('defaultVolume')
-    };
-
-    // Load settings
-    ipcRenderer.send('get-settings');
-
-    ipcRenderer.on('settings-data', (event, settings) => {
-        currentSettings = settings;
-        populateForm(settings);
-    });
-
-    function populateForm(settings) {
-        // Shortcuts
-        Object.keys(shortcutInputs).forEach(key => {
-            const value = settings.shortcuts[key] || '';
-            shortcutInputs[key].value = formatShortcut(value);
-            shortcutInputs[key].dataset.value = value;
-            updateShortcutStyle(shortcutInputs[key]);
-        });
-
-        // Startup
-        elements.openAtLogin.checked = settings.startup.openAtLogin;
-        elements.startHidden.checked = settings.startup.startHidden;
-
-        // Defaults
-        elements.defaultBrightness.value = settings.defaults.brightness;
-        elements.defaultContrast.value = settings.defaults.contrast;
-        elements.defaultVolume.value = settings.defaults.volume;
-    }
-
-    function formatShortcut(shortcut) {
-        if (!shortcut) return '';
-        return shortcut
-            .replace('CommandOrControl', process.platform === 'darwin' ? 'Cmd' : 'Ctrl')
-            .replace('Command', 'Cmd')
-            .replace('Control', 'Ctrl');
-    }
-
-    function updateShortcutStyle(input) {
-        input.classList.toggle('empty', !input.dataset.value);
-    }
-
-    // Shortcut recording
-    Object.keys(shortcutInputs).forEach(key => {
-        shortcutInputs[key].addEventListener('click', function() {
-            startRecording(this, key);
-        });
-    });
-
-    function startRecording(input, key) {
-        if (recordingInput) {
-            recordingInput.classList.remove('recording');
-            recordingInput.value = formatShortcut(recordingInput.dataset.value);
-        }
-
-        recordingInput = input;
-        input.classList.add('recording');
-        input.value = 'Press keys...';
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (!recordingInput) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Escape cancels recording
-        if (e.key === 'Escape') {
-            recordingInput.classList.remove('recording');
-            recordingInput.value = formatShortcut(recordingInput.dataset.value);
-            recordingInput = null;
-            return;
-        }
-
-        // Skip modifier-only keys
-        if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
-            return;
-        }
-
-        const parts = [];
-        if (e.ctrlKey || e.metaKey) parts.push('CommandOrControl');
-        if (e.altKey) parts.push('Alt');
-        if (e.shiftKey) parts.push('Shift');
-
-        // Convert key to Electron accelerator format
-        let key = e.key;
-        if (key === ' ') key = 'Space';
-        else if (key === '+') key = 'Plus';
-        else if (key === '=') key = '=';
-        else if (key === '-') key = '-';
-        else if (key.length === 1) key = key.toUpperCase();
-        else if (key.startsWith('Arrow')) key = key.replace('Arrow', '');
-
-        parts.push(key);
-
-        const shortcut = parts.join('+');
-        recordingInput.dataset.value = shortcut;
-        recordingInput.value = formatShortcut(shortcut);
-        recordingInput.classList.remove('recording');
-        updateShortcutStyle(recordingInput);
-        recordingInput = null;
-        autoSave();
-    });
-
-    // Clear buttons
-    document.querySelectorAll('.clear-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const key = btn.dataset.shortcut;
-            shortcutInputs[key].dataset.value = '';
-            shortcutInputs[key].value = '';
-            updateShortcutStyle(shortcutInputs[key]);
-            autoSave();
-        });
-    });
-
-    // Autosave functionality
-    let saveTimeout = null;
-    const saveIndicator = document.getElementById('saveIndicator');
-
-    function showSaveIndicator(text, className) {
-        saveIndicator.textContent = text;
-        saveIndicator.className = 'save-indicator ' + className;
-        if (className === 'saved') {
-            setTimeout(() => {
-                saveIndicator.className = 'save-indicator';
-            }, 2000);
-        }
-    }
-
-    function collectSettings() {
-        const settings = {
-            shortcuts: {},
-            startup: {
-                openAtLogin: elements.openAtLogin.checked,
-                startHidden: elements.startHidden.checked
-            },
-            defaults: {
-                brightness: parseInt(elements.defaultBrightness.value) || 50,
-                contrast: parseInt(elements.defaultContrast.value) || 50,
-                volume: parseInt(elements.defaultVolume.value) || 50
-            }
-        };
-
-        Object.keys(shortcutInputs).forEach(key => {
-            settings.shortcuts[key] = shortcutInputs[key].dataset.value || '';
-        });
-
-        return settings;
-    }
-
-    function autoSave() {
-        showSaveIndicator('Saving...', 'saving');
-
-        if (saveTimeout) {
-            clearTimeout(saveTimeout);
-        }
-
-        saveTimeout = setTimeout(() => {
-            ipcRenderer.send('save-settings', collectSettings());
-        }, 300);
-    }
-
-    // Add change listeners for autosave
-    elements.openAtLogin.addEventListener('change', autoSave);
-    elements.startHidden.addEventListener('change', autoSave);
-    elements.defaultBrightness.addEventListener('change', autoSave);
-    elements.defaultBrightness.addEventListener('input', autoSave);
-    elements.defaultContrast.addEventListener('change', autoSave);
-    elements.defaultContrast.addEventListener('input', autoSave);
-    elements.defaultVolume.addEventListener('change', autoSave);
-    elements.defaultVolume.addEventListener('input', autoSave);
-
-    ipcRenderer.on('settings-saved', () => {
-        showSaveIndicator('Saved', 'saved');
-    });
-
-    // Close
-    document.getElementById('closeBtn').addEventListener('click', () => {
-        window.close();
-    });
-</script>
+<script src="settings.js"></script>
 
 </body>
 </html>

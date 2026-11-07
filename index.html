@@ -3,93 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <title>GigaMate</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';"/>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'"/>
+    <meta name="color-scheme" content="light dark">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="control-group">
-    <span class="control-label">Brightness</span>
-    <input type="range" min="0" max="100" value="50" class="slider" id="brightness">
-    <span class="control-value" id="brightness-value">50</span>
-</div>
+<section class="module">
+    <div class="module-title">Display</div>
 
-<div class="control-group">
-    <span class="control-label">Contrast</span>
-    <input type="range" min="0" max="100" value="50" class="slider" id="contrast">
-    <span class="control-value" id="contrast-value">50</span>
-</div>
+    <div class="slider-row">
+        <div class="slider-wrap">
+            <input type="range" min="0" max="100" value="50" class="slider" id="brightness" aria-label="Brightness">
+            <svg class="slider-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="3"/>
+                <g stroke-width="1.4" stroke-linecap="round">
+                    <path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/>
+                </g>
+            </svg>
+        </div>
+        <span class="slider-value" id="brightness-value">50</span>
+    </div>
 
-<div class="control-group">
-    <span class="control-label">Volume</span>
-    <input type="range" min="0" max="100" value="50" class="slider" id="volume">
-    <span class="control-value" id="volume-value">50</span>
-</div>
+    <div class="slider-row">
+        <div class="slider-wrap">
+            <input type="range" min="0" max="100" value="50" class="slider" id="contrast" aria-label="Contrast">
+            <svg class="slider-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="5.6" fill="none" stroke-width="1.4"/>
+                <path d="M8 2.4a5.6 5.6 0 0 1 0 11.2z"/>
+            </svg>
+        </div>
+        <span class="slider-value" id="contrast-value">50</span>
+    </div>
+</section>
 
-<div class="control-group kvm-group">
-    <span class="control-label">KVM</span>
-    <button class="kvm-btn" id="kvm-switch">Switch</button>
-</div>
+<section class="module">
+    <div class="module-title">Sound</div>
 
-<div class="settings-link">
-    <a href="#" id="open-settings">Settings</a>
-</div>
+    <div class="slider-row">
+        <div class="slider-wrap">
+            <input type="range" min="0" max="100" value="50" class="slider" id="volume" aria-label="Volume">
+            <svg class="slider-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M2 6h2.5L8 3v10L4.5 10H2z"/>
+                <path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.3 3.7a6 6 0 0 1 0 8.6" fill="none" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <span class="slider-value" id="volume-value">50</span>
+    </div>
+</section>
 
-<script>
-    const {ipcRenderer} = require('electron');
+<section class="module module-row">
+    <div>
+        <div class="module-title">Input</div>
+        <div class="module-subtitle">KVM switch</div>
+    </div>
+    <button class="push-button" id="kvm-switch">Switch</button>
+</section>
 
-    const controls = {
-        brightness: document.getElementById('brightness'),
-        contrast: document.getElementById('contrast'),
-        volume: document.getElementById('volume')
-    };
+<div class="separator"></div>
 
-    const values = {
-        brightness: document.getElementById('brightness-value'),
-        contrast: document.getElementById('contrast-value'),
-        volume: document.getElementById('volume-value')
-    };
+<button class="menu-item" id="open-settings">Settings…</button>
 
-    const kvmSwitch = document.getElementById('kvm-switch');
-    let currentKvm = 0;
-
-    // Slider event listeners
-    Object.keys(controls).forEach(name => {
-        controls[name].addEventListener('input', function() {
-            values[name].textContent = this.value;
-            ipcRenderer.send(`${name}-change`, parseInt(this.value));
-        });
-    });
-
-    // KVM switch button
-    kvmSwitch.addEventListener('click', function() {
-        currentKvm = currentKvm === 0 ? 1 : 0;
-        ipcRenderer.send('kvm-switch-change', currentKvm);
-    });
-
-    // Receive current values from main process
-    ipcRenderer.on('init-values', (event, data) => {
-        Object.keys(controls).forEach(name => {
-            if (data[name] !== undefined) {
-                controls[name].value = data[name];
-                values[name].textContent = data[name];
-            }
-        });
-
-        if (data.kvm !== undefined) {
-            currentKvm = data.kvm;
-        }
-    });
-
-    // Request initial values when window loads
-    ipcRenderer.send('request-values');
-
-    // Settings link
-    document.getElementById('open-settings').addEventListener('click', (e) => {
-        e.preventDefault();
-        ipcRenderer.send('open-settings');
-    });
-</script>
+<script src="popup.js"></script>
 
 </body>
 </html>

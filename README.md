@@ -1,20 +1,25 @@
 # GigaMate
 
-This pet project is a tray utility for macOS built with [Electron](https://www.electronjs.org/), designed to control a capable Gigabyte monitors.  
-The application provides a simple interface to adjust brightness. 
+This pet project is a tray utility for macOS built with [Electron](https://www.electronjs.org/), designed to control capable Gigabyte monitors.  
+It adjusts brightness, contrast, volume and the KVM switch right from the menu bar, with a native macOS look.
 
 ![ProjectImage](images/readme_icon.png)
 
 ## Features
 
-![Brightness](images/brightness.gif)
+| Light | Dark |
+|---|---|
+| ![Popup, light theme](images/popup-light.png) | ![Popup, dark theme](images/popup-dark.png) |
+| ![Settings, light theme](images/settings-light.png) | ![Settings, dark theme](images/settings-dark.png) |
 
-- **Tray Icon**: Access the utility from the system tray (macOS, Linux, Windows).
-- **Monitor Control**: Adjust brightness, contrast, and volume.
-- **KVM Switch**: Toggle KVM input via keyboard shortcut.
+- **Tray Icon**: Monochrome menu bar icon on macOS that adapts to light and dark menu bars (system tray on Linux and Windows).
+- **Monitor Control**: Adjust brightness, contrast, and volume from a Control Center style popup.
+- **KVM Switch**: Toggle KVM input from the popup or via keyboard shortcut.
 - **Global Shortcuts**: Configurable keyboard shortcuts for all controls.
+- **Appearance**: Follows the system theme, or force light or dark in Settings.
 - **Settings**: Easy configuration with autosave - changes apply instantly.
 - **Startup**: Option to run at login.
+- **Lightweight**: The popup is unloaded while hidden to keep memory usage low.
 
 
 ## Capable models
@@ -64,11 +69,11 @@ xattr -c /Applications/GigaMate.app
 
 Default shortcuts (configurable in Settings):
 
-- **Brightness Up**: `Alt+Cmd/Ctrl+Shift+=`
-- **Brightness Down**: `Alt+Cmd/Ctrl+Shift+-`
+- **Brightness Up**: `Cmd/Ctrl+Alt+Up`
+- **Brightness Down**: `Cmd/Ctrl+Alt+Down`
 - **Contrast Up/Down**: Not set by default
 - **Volume Up/Down**: Not set by default
-- **KVM Switch**: `Alt+Cmd/Ctrl+Shift+0`
+- **KVM Switch**: `Cmd/Ctrl+Alt+K`
 
 ### Tray Menu
 
@@ -86,6 +91,8 @@ Add issues with links
 Feel free to fork the repository and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
+
+MIT
 
 
 ## Special thanks

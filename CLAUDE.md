@@ -23,17 +23,20 @@ npm run rebuild:arm64  # Rebuild native modules for ARM64 (Apple Silicon)
 The application consists of two Electron processes:
 
 **Main Process (main.js):**
-- HID device communication with Realtek-based Gigabyte monitors (VendorID: 0x0bda, ProductID: 0x1100)
-- Global keyboard shortcuts: `Alt+Cmd/Ctrl+Shift+=` (brightness up), `Alt+Cmd/Ctrl+Shift+-` (brightness down)
-- Tray icon via `menubar` package
-- Settings persistence via `electron-store`
+- HID device communication with Realtek-based Gigabyte monitors (VendorID: 0x0bda, ProductID: 0x1100), single reconnect loop
+- Configurable global shortcuts (defaults: `CommandOrControl+Alt+Up/Down` for brightness, `CommandOrControl+Alt+K` for KVM)
+- Tray icon via `menubar` package; the popup window is closed on hide to free memory and recreated on the next click
+- Settings persistence via `electron-store`; settings are sanitized in `sanitizeSettings()` on read and on save
+- Autostart: LaunchAgent plist on macOS, XDG `.desktop` on Linux, Squirrel `Update.exe` login item on Windows
+- Theme: `nativeTheme.themeSource` from the `theme` setting (system/light/dark)
 
-**Renderer Process (index.html):**
-- Minimal UI with brightness slider
-- IPC communication with main process
+**Renderers (index.html + popup.js, settings.html + settings.js):**
+- Sandboxed with `contextIsolation`; they talk to main only through `preload.js` (`window.gigamate.send/on` with a channel allowlist)
+- Strict CSP (`script-src 'self'`): no inline scripts
+- macOS look: vibrancy backgrounds, styles follow `prefers-color-scheme`; solid fallback background on Windows/Linux
 
 **Build Configuration (forge.config.js):**
-- Electron Forge handles packaging for macOS, Linux (DEB/RPM/Flatpak), and Windows (Squirrel)
+- Electron Forge handles packaging for macOS, Linux (DEB/RPM), and Windows (Squirrel)
 - GitHub publisher integration for releases
 - Electron Fuses enabled for security hardening
 
@@ -44,7 +47,7 @@ Monitor communication uses a custom 193-byte buffer protocol (reverse-engineered
 - `0x12` - Contrast
 - `0x62` - Volume
 - `0xe00b` - Low blue light
-- `0xe00c` - KVM switch
+- `0xe069` - KVM switch
 
 ## Key Dependencies
 

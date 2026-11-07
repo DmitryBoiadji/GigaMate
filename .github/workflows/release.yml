@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+# Build jobs only need to read the repo; the release job asks for write access itself
+permissions:
+  contents: read
+
 jobs:
   build-macos:
     runs-on: macos-latest
@@ -95,7 +99,7 @@ jobs:
         run: find artifacts -type f
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/**/*.zip

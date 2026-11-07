@@ -1,162 +1,205 @@
+/* Tray popup styled after the macOS Control Center. Colors follow the system theme. */
+
+:root {
+    color-scheme: light dark;
+    --text: rgba(0, 0, 0, 0.85);
+    --text-secondary: rgba(0, 0, 0, 0.5);
+    --module-bg: rgba(255, 255, 255, 0.55);
+    --module-border: rgba(0, 0, 0, 0.06);
+    --track: rgba(0, 0, 0, 0.1);
+    --fill: #ffffff;
+    --icon: rgba(0, 0, 0, 0.55);
+    --separator: rgba(0, 0, 0, 0.1);
+    --hover: rgba(0, 0, 0, 0.06);
+    --button-bg: #ffffff;
+    --button-border: rgba(0, 0, 0, 0.12);
+    --fallback-bg: #ececec;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: rgba(255, 255, 255, 0.9);
+        --text-secondary: rgba(255, 255, 255, 0.55);
+        --module-bg: rgba(255, 255, 255, 0.08);
+        --module-border: rgba(255, 255, 255, 0.06);
+        --track: rgba(255, 255, 255, 0.12);
+        --fill: rgba(255, 255, 255, 0.92);
+        --icon: #8a8a8e;
+        --separator: rgba(255, 255, 255, 0.1);
+        --hover: rgba(255, 255, 255, 0.1);
+        --button-bg: rgba(255, 255, 255, 0.14);
+        --button-border: rgba(255, 255, 255, 0.08);
+        --fallback-bg: #2b2b2b;
+    }
+}
+
 * {
     box-sizing: border-box;
 }
 
+html, body {
+    margin: 0;
+    /* The popup has a fixed size; never show scrollbars even if content is a pixel taller */
+    overflow: hidden;
+    /* Transparent so the native vibrancy shows through on macOS */
+    background: transparent;
+}
+
+/* Windows and Linux have no vibrancy, so use a solid background there */
+html:not(.platform-darwin) body {
+    background: var(--fallback-bg);
+}
+
 body {
     -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 12px;
-    margin: 0;
-    padding: 12px;
-    background: linear-gradient(145deg, #1e1e1e 0%, #2a2a2a 100%);
-    color: #e0e0e0;
-    min-width: 240px;
+    font-size: 13px;
+    color: var(--text);
+    padding: 10px;
 }
 
-.control-group {
+.module {
+    background: var(--module-bg);
+    border: 0.5px solid var(--module-border);
+    border-radius: 12px;
+    padding: 10px 12px 12px;
+    margin-bottom: 8px;
+}
+
+.module-row {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
-    padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: background 0.2s ease, border-color 0.2s ease;
+    justify-content: space-between;
+    padding: 10px 12px;
 }
 
-.control-group:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.08);
+.module-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
 }
 
-.control-group:last-child {
-    margin-bottom: 0;
+.module-row .module-title {
+    margin-bottom: 1px;
 }
 
-.control-label {
-    width: 65px;
-    font-weight: 500;
+.module-subtitle {
     font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #888;
-    transition: color 0.2s ease;
+    color: var(--text-secondary);
 }
 
-.control-group:hover .control-label {
-    color: #aaa;
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.slider-row + .slider-row {
+    margin-top: 8px;
+}
+
+.slider-wrap {
+    position: relative;
+    flex: 1;
+    height: 24px;
 }
 
 .slider {
-    flex: 1;
+    --value: 50;
+    --thumb: 24px;
     -webkit-appearance: none;
-    height: 6px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, #3a3a3a 0%, #454545 100%);
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    border-radius: 12px;
     outline: none;
-    margin: 0 10px;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    /* Fill reaches the thumb center at any value */
+    background: linear-gradient(to right,
+        var(--fill) 0,
+        var(--fill) calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--value) / 100),
+        var(--track) calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--value) / 100));
+    overflow: hidden;
 }
 
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
+    width: var(--thumb);
+    height: var(--thumb);
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.slider:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, AccentColor 45%, transparent);
+}
+
+.slider-icon {
+    position: absolute;
+    left: 6px;
+    top: 4px;
     width: 16px;
     height: 16px;
-    border-radius: 50%;
-    background: linear-gradient(145deg, #5aacff 0%, #3d8ee6 100%);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 6px rgba(74, 158, 255, 0.4),
-                0 1px 2px rgba(0, 0, 0, 0.2);
+    fill: var(--icon);
+    stroke: var(--icon);
+    pointer-events: none;
 }
 
-.slider::-webkit-slider-thumb:hover {
-    background: linear-gradient(145deg, #6bb8ff 0%, #4a9eff 100%);
-    transform: scale(1.1);
-    box-shadow: 0 3px 10px rgba(74, 158, 255, 0.5),
-                0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.slider::-webkit-slider-thumb:active {
-    transform: scale(0.95);
-}
-
-.control-value {
-    width: 32px;
+.slider-value {
+    width: 26px;
     text-align: right;
+    font-size: 12px;
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.push-button {
+    font: inherit;
     font-size: 13px;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.kvm-group {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-}
-
-.kvm-btn {
-    margin-left: auto;
-    padding: 6px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    background: var(--button-bg);
+    border: 0.5px solid var(--button-border);
     border-radius: 6px;
-    background: linear-gradient(145deg, #3d3d3d 0%, #333 100%);
-    color: #ccc;
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 3px 14px;
+    box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.15);
 }
 
-.kvm-btn:hover {
-    background: linear-gradient(145deg, #4d4d4d 0%, #444 100%);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+.push-button:active {
+    filter: brightness(0.92);
 }
 
-.kvm-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+.push-button:focus-visible {
+    outline: 3px solid color-mix(in srgb, AccentColor 45%, transparent);
+    outline-offset: 0;
 }
 
-.settings-link {
-    text-align: center;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+.separator {
+    height: 0.5px;
+    background: var(--separator);
+    margin: 2px 4px 4px;
 }
 
-.settings-link a {
-    color: #888;
-    text-decoration: none;
-    font-size: 11px;
-    transition: color 0.2s ease;
-}
-
-.settings-link a:hover {
-    color: #5aacff;
-}
-
-/* Custom scrollbar for consistency */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
+.menu-item {
+    display: block;
+    width: 100%;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    color: var(--text);
     background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
 }
 
-::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
+.menu-item:hover {
+    background: var(--hover);
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+.menu-item:focus-visible {
+    outline: 2px solid color-mix(in srgb, AccentColor 45%, transparent);
 }
