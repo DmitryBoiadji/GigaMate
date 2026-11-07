@@ -17,7 +17,7 @@ The application provides a simple interface to adjust brightness.
 - **Startup**: Option to run at login.
 
 
-## Capable models*
+## Capable models
 
 * Gigabyte M32U
 * Gigabyte M32Q
