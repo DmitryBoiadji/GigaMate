@@ -1,3 +1,5 @@
+<p align="center"><img src="images/logo.png" width="128" alt="GigaMate icon"></p>
+
 # GigaMate
 
 This pet project is a tray utility for macOS, Windows and Linux built with [Electron](https://www.electronjs.org/), designed to control capable Gigabyte monitors.  

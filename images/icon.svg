@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3f4b"/>
+      <stop offset="1" stop-color="#16181d"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffb347"/>
+      <stop offset="0.55" stop-color="#ff6a3d"/>
+      <stop offset="1" stop-color="#7b5cff"/>
+    </linearGradient>
+    <linearGradient id="bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f5f7"/>
+      <stop offset="1" stop-color="#c9ccd3"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+  <!-- macOS icon grid: 824px rounded square centered on a 1024px canvas -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)" filter="url(#shadow)"/>
+  <rect x="100.5" y="100.5" width="823" height="823" rx="184.5" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+  <!-- Stand -->
+  <path d="M462 676 h100 l18 92 h-136 z" fill="url(#bezel)"/>
+  <rect x="392" y="760" width="240" height="30" rx="15" fill="url(#bezel)"/>
+  <!-- Monitor -->
+  <g filter="url(#shadow)">
+    <rect x="216" y="262" width="592" height="420" rx="44" fill="url(#bezel)"/>
+  </g>
+  <rect x="244" y="290" width="536" height="364" rx="22" fill="url(#screen)"/>
+  <!-- Brightness symbol -->
+  <g transform="translate(512 472)" fill="#ffffff">
+    <circle r="78" opacity="0.5" filter="url(#glow)"/>
+    <circle r="62"/>
+    <g stroke="#ffffff" stroke-width="26" stroke-linecap="round">
+      <line x1="0" y1="-104" x2="0" y2="-138"/>
+      <line x1="0" y1="104" x2="0" y2="138"/>
+      <line x1="-104" y1="0" x2="-138" y2="0"/>
+      <line x1="104" y1="0" x2="138" y2="0"/>
+      <line x1="-73.5" y1="-73.5" x2="-97.6" y2="-97.6"/>
+      <line x1="73.5" y1="73.5" x2="97.6" y2="97.6"/>
+      <line x1="-73.5" y1="73.5" x2="-97.6" y2="97.6"/>
+      <line x1="73.5" y1="-73.5" x2="97.6" y2="-97.6"/>
+    </g>
+  </g>
+</svg>

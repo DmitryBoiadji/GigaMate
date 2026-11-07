@@ -45,7 +45,8 @@ module.exports = {
         {
             "name": "@electron-forge/maker-squirrel",
             "config": {
-                "name": "electron_quick_start"
+                "name": "GigaMate",
+                "setupIcon": "images/icon.ico"
             }
         },
         {
@@ -57,11 +58,11 @@ module.exports = {
         },
         {
             "name": "@electron-forge/maker-deb",
-            "config": {}
+            "config": {options: {icon: 'images/logo.png'}}
         },
         {
             "name": "@electron-forge/maker-rpm",
-            "config": {}
+            "config": {options: {icon: 'images/logo.png'}}
         }
     ],
     plugins: [
