@@ -35,8 +35,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build for macOS
-        run: npm run make
+      # macos-latest is Apple Silicon; build Intel separately so both get a native app
+      - name: Build for macOS (Apple Silicon)
+        run: npm run make -- --arch=arm64
+
+      - name: Build for macOS (Intel)
+        run: npm run make -- --arch=x64
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

@@ -42,6 +42,9 @@ function throttledSender(channel) {
     };
 }
 
+// Values pushed by main must not yank the thumb from under the pointer
+const dragging = new Set();
+
 names.forEach(name => {
     const sendValue = throttledSender(`${name}-change`);
     controls[name].addEventListener('input', function() {
@@ -49,7 +52,14 @@ names.forEach(name => {
         render(name, value);
         sendValue(value);
     });
+    controls[name].addEventListener('pointerdown', () => dragging.add(name));
+    // On release send the final value right away instead of waiting for the throttle
+    controls[name].addEventListener('change', function() {
+        dragging.delete(name);
+        send(`${name}-change`, parseInt(this.value, 10));
+    });
 });
+document.addEventListener('pointerup', () => dragging.clear());
 
 // Main owns the KVM state, so the popup cannot drift from shortcut presses or failed writes
 kvmSwitch.addEventListener('click', () => {
@@ -66,7 +76,7 @@ function renderStatus(connected) {
 
 on('init-values', data => {
     names.forEach(name => {
-        if (Number.isInteger(data[name])) render(name, data[name]);
+        if (Number.isInteger(data[name]) && !dragging.has(name)) render(name, data[name]);
     });
     if (typeof data.connected === 'boolean') renderStatus(data.connected);
 });

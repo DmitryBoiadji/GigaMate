@@ -16,7 +16,12 @@ function windowsLoginItem(enabled) {
 
 // Do not leave a Run registry entry pointing at a removed app
 if (process.platform === 'win32' && process.argv.includes('--squirrel-uninstall')) {
-    app.setLoginItemSettings(windowsLoginItem(false));
+    try {
+        app.setLoginItemSettings(windowsLoginItem(false));
+    } catch (error) {
+        // Never block Squirrel's own uninstall steps below
+        console.error('Failed to remove login item:', error);
+    }
 }
 
 // Windows Squirrel install/update events and duplicate launches must exit before creating anything
@@ -109,6 +114,24 @@ function isAllowedAccelerator(value) {
     return hasModifier || /^F([1-9]|1[0-9]|2[0-4])$/.test(key);
 }
 
+// Normalized form used to detect two actions bound to the same keys: aliases are resolved for this platform
+// (CommandOrControl is Command on macOS and Control elsewhere) and modifiers are sorted.
+const MODIFIER_ALIASES = {
+    CommandOrControl: isMac ? 'Command' : 'Control',
+    CmdOrCtrl: isMac ? 'Command' : 'Control',
+    Cmd: 'Command',
+    Ctrl: 'Control',
+    Option: 'Alt',
+    Meta: 'Super'
+};
+
+function canonicalAccelerator(value) {
+    const parts = value.split('+');
+    const key = parts.pop();
+    const modifiers = [...new Set(parts.map(part => MODIFIER_ALIASES[part] || part))].sort();
+    return [...modifiers, key].join('+');
+}
+
 // Fills in missing keys (including nested ones added by newer versions) and drops invalid values.
 // Used both for stored settings and for anything a renderer sends.
 function sanitizeSettings(input) {
@@ -120,8 +143,8 @@ function sanitizeSettings(input) {
         let value = saved.shortcuts && saved.shortcuts[name];
         if (typeof value !== 'string') value = fallback;
         // Invalid or duplicate accelerators are dropped: only one action can own a key combination
-        if (value && (!isAllowedAccelerator(value) || used.has(value))) value = '';
-        if (value) used.add(value);
+        if (value && (!isAllowedAccelerator(value) || used.has(canonicalAccelerator(value)))) value = '';
+        if (value) used.add(canonicalAccelerator(value));
         settings.shortcuts[name] = value;
     }
     settings.startup.openAtLogin = Boolean(saved.startup && saved.startup.openAtLogin);
@@ -325,6 +348,14 @@ function openSettingsWindow() {
         settingsWindow.webContents.openDevTools();
     }
 
+    // A crashed settings renderer can no longer send resume-shortcuts
+    settingsWindow.webContents.on('render-process-gone', () => {
+        if (shortcutsPaused) {
+            shortcutsPaused = false;
+            registerShortcuts();
+        }
+    });
+
     settingsWindow.on('closed', () => {
         settingsWindow = null;
         shortcutsPaused = false;
@@ -364,6 +395,7 @@ if (debug) {
 }
 
 let menubarReady = false;
+const POPUP_CLOSE_DELAY_MS = 30000;
 
 function showPopup() {
     if (!menubarReady) return;
@@ -397,6 +429,8 @@ const MONITOR = {vendorId: 0x0bda, productId: 0x1100};
 const RECONNECT_DELAY_MS = 3000;
 const MAX_RECONNECT_DELAY_MS = 60000;
 const NOTIFICATION_INTERVAL_MS = 30000;
+// A slider drag sends ~20 values per second; do not enumerate USB devices on every one of them
+const IMMEDIATE_CONNECT_INTERVAL_MS = 1000;
 
 const properties = {
     "brightness": 0x10,
@@ -415,6 +449,7 @@ let dev = null;
 let reconnectTimer = null;
 let reconnectDelay = RECONNECT_DELAY_MS;
 let lastNotificationAt = 0;
+let lastImmediateConnectAt = 0;
 
 function closeDevice() {
     if (!dev) return;
@@ -459,6 +494,23 @@ function openDevice() {
     }
 }
 
+function isMonitorPresent() {
+    try {
+        return HID.devices().some(d => d.vendorId === MONITOR.vendorId && d.productId === MONITOR.productId);
+    } catch (error) {
+        return false;
+    }
+}
+
+// node-hid does not notice an unplugged or powered-off monitor until a write fails, so check before showing status
+function refreshConnection() {
+    if (dev && !isMonitorPresent()) {
+        console.log('Monitor is gone');
+        closeDevice();
+        scheduleReconnect();
+    }
+}
+
 function connectToDevice() {
     reconnectTimer = null;
     if (!openDevice()) scheduleReconnect();
@@ -484,9 +536,14 @@ function setProperty(propName, value) {
     }
 
     // The user is acting now, so try to connect immediately instead of waiting for the reconnect loop
-    if (!dev && !openDevice()) {
-        handleDisconnect();
-        return false;
+    if (!dev) {
+        const now = Date.now();
+        if (now - lastImmediateConnectAt < IMMEDIATE_CONNECT_INTERVAL_MS) return false;
+        lastImmediateConnectAt = now;
+        if (!openDevice()) {
+            handleDisconnect();
+            return false;
+        }
     }
 
     const buf = Buffer.alloc(193);
@@ -554,6 +611,8 @@ const SHORTCUT_ACTIONS = {
     kvmSwitch: withPopupSync(toggleKvm)
 };
 
+let lastFailedShortcuts = [];
+
 // Returns the names of shortcuts that could not be registered (taken by another app or invalid)
 function registerShortcuts() {
     globalShortcut.unregisterAll();
@@ -574,6 +633,7 @@ function registerShortcuts() {
         console.log(`Shortcut ${name} (${accelerator}): ${registered ? 'registered' : 'FAILED'}`);
         if (!registered) failed.push(name);
     }
+    lastFailedShortcuts = failed;
     return failed;
 }
 
@@ -604,16 +664,19 @@ mb.on('ready', () => {
     // Monitor controls from the popup
     for (const name of ['brightness', 'contrast', 'volume']) {
         ipcMain.on(`${name}-change`, (event, value) => {
-            if (fromPopup(event)) setProperty(name, value);
+            // A failed write leaves the slider showing a value the monitor never got: move it back
+            if (fromPopup(event) && !setProperty(name, value)) sendValuesToPopup();
         });
     }
 
     ipcMain.on('kvm-toggle', (event) => {
-        if (fromPopup(event)) toggleKvm();
+        if (fromPopup(event) && !toggleKvm()) sendValuesToPopup();
     });
 
     ipcMain.on('request-values', (event) => {
-        if (fromPopup(event)) event.reply('init-values', currentValues());
+        if (!fromPopup(event)) return;
+        refreshConnection();
+        event.reply('init-values', currentValues());
     });
 
     ipcMain.on('open-settings', (event) => {
@@ -622,7 +685,9 @@ mb.on('ready', () => {
 
     // Settings window
     ipcMain.on('get-settings', (event) => {
-        if (fromSettings(event)) event.reply('settings-data', getSettings());
+        if (!fromSettings(event)) return;
+        event.reply('settings-data', getSettings());
+        event.reply('shortcuts-status', lastFailedShortcuts);
     });
 
     ipcMain.on('save-settings', (event, input) => {
@@ -664,19 +729,31 @@ mb.on('ready', () => {
         });
     }
 
-    // Free the renderer while the popup is hidden; menubar recreates it on the next click.
-    // Deferred: menubar emits after-hide before it marks the window hidden, and a quick re-click may show it again.
+    // Free the renderer once the popup has been hidden for a while; menubar recreates it on the next click.
+    // The delay keeps quick re-opens instant and lets a trailing slider value reach the monitor.
+    let closeTimer = null;
     mb.on('after-hide', () => {
-        setImmediate(() => {
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => {
             if (mb.window && !mb.window.isDestroyed() && !mb.window.isVisible()) mb.window.close();
-        });
+        }, POPUP_CLOSE_DELAY_MS);
+    });
+
+    // A popup reused within the delay did not reload, so refresh its values and status
+    mb.on('show', () => {
+        clearTimeout(closeTimer);
+        if (mb.window && !mb.window.isDestroyed() && !mb.window.webContents.isLoading()) {
+            refreshConnection();
+            sendValuesToPopup();
+        }
     });
 
     const settings = getSettings();
     applyTheme(settings.theme);
     registerShortcuts();
-    // Re-assert autostart so the entry follows the app if it was moved
-    if (settings.startup.openAtLogin) {
+    // Re-assert autostart so the entry follows the app if it was moved. Not on Windows: the Update.exe path is
+    // stable there, and rewriting the login item would undo the user disabling it in Task Manager.
+    if (settings.startup.openAtLogin && process.platform !== 'win32') {
         setAutostart(true);
     }
 

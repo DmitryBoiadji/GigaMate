@@ -93,6 +93,21 @@ const CODE_KEYS = {
     ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right'
 };
 
+// Same normalization as main: resolves aliases for this platform and sorts modifiers,
+// so "Command+Alt+Up" and "CommandOrControl+Alt+Up" are recognized as the same keys on macOS
+const MODIFIER_ALIASES = {
+    CommandOrControl: isMac ? 'Command' : 'Control',
+    CmdOrCtrl: isMac ? 'Command' : 'Control',
+    Cmd: 'Command', Ctrl: 'Control', Option: 'Alt', Meta: 'Super'
+};
+
+function canonicalAccelerator(value) {
+    const parts = value.split('+');
+    const key = parts.pop();
+    const modifiers = [...new Set(parts.map(part => MODIFIER_ALIASES[part] || part))].sort();
+    return [...modifiers, key].join('+');
+}
+
 function acceleratorKey(code) {
     if (/^Key[A-Z]$/.test(code)) return code.slice(3);
     if (/^Digit[0-9]$/.test(code)) return code.slice(5);
@@ -109,6 +124,8 @@ Object.keys(shortcutInputs).forEach(key => {
     shortcutInputs[key].addEventListener('keydown', function(e) {
         if (recordingInput || (e.code !== 'Enter' && e.code !== 'Space')) return;
         e.preventDefault();
+        // The starting keypress must not reach the recorder below and be recorded itself
+        e.stopPropagation();
         startRecording(this);
     });
 });
@@ -172,7 +189,8 @@ document.addEventListener('keydown', (e) => {
 
     const accelerator = [...modifiers, key].join('+');
     const owner = Object.keys(shortcutInputs).find(name =>
-        shortcutInputs[name] !== recordingInput && shortcutInputs[name].dataset.value === accelerator);
+        shortcutInputs[name] !== recordingInput && shortcutInputs[name].dataset.value
+        && canonicalAccelerator(shortcutInputs[name].dataset.value) === canonicalAccelerator(accelerator));
     if (owner) {
         recordingInput.value = 'Already in use';
         return;
@@ -184,9 +202,14 @@ document.addEventListener('keydown', (e) => {
     autoSave();
 });
 
-// Clicking outside a recorder cancels recording
+// Clicking anywhere except the active recorder cancels recording
 document.addEventListener('mousedown', (e) => {
-    if (recordingInput && !e.target.closest('.recorder')) stopRecording();
+    if (recordingInput && e.target.closest('.recorder') !== recordingInput.parentElement) stopRecording();
+});
+
+// Leaving the window must not keep global shortcuts paused
+window.addEventListener('blur', () => {
+    if (recordingInput) stopRecording();
 });
 
 // Clear buttons
@@ -260,10 +283,8 @@ function autoSave() {
     saveTimeout = setTimeout(saveNow, 300);
 }
 
-// Closing the window right after a change must not lose it
-window.addEventListener('beforeunload', () => {
-    if (saveTimeout) saveNow();
-});
+// Closing the window must not lose a pending change or a number typed but not yet committed
+window.addEventListener('beforeunload', saveNow);
 
 // Add change listeners for autosave. Number fields save on change (blur or Enter), not on every keystroke.
 themeRadios.forEach(radio => radio.addEventListener('change', autoSave));

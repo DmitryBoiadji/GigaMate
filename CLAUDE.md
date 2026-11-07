@@ -25,7 +25,8 @@ The application consists of two Electron processes:
 **Main Process (main.js):**
 - HID device communication with Realtek-based Gigabyte monitors (VendorID: 0x0bda, ProductID: 0x1100), single reconnect loop
 - Configurable global shortcuts (defaults: `CommandOrControl+Alt+Up/Down` for brightness, `CommandOrControl+Alt+K` for KVM)
-- Tray icon via `menubar` package; the popup window is closed on hide to free memory and recreated on the next click
+- Tray icon via `menubar` package; the popup window is closed 30 s after hide to free memory and recreated on the next click
+- Connection status: node-hid does not detect unplugging, so `refreshConnection()` re-checks presence each time the popup is shown
 - Settings persistence via `electron-store`; settings are sanitized in `sanitizeSettings()` on read and on save
 - Autostart: LaunchAgent plist on macOS, XDG `.desktop` on Linux, Squirrel `Update.exe` login item on Windows
 - Theme: `nativeTheme.themeSource` from the `theme` setting (system/light/dark)

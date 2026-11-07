@@ -10,8 +10,15 @@ const APP_FILES = [
     '/images/iconTemplate.png', '/images/iconTemplate@2x.png', '/images/icon@2x.png'
 ];
 
+// Not needed at runtime: node-hid C sources (prebuilt binaries are used), type-only packages, menubar's default icon
+const PRUNED = [
+    '/node_modules/node-hid/hidapi', '/node_modules/node-hid/src', '/node_modules/node-hid/binding.gyp',
+    '/node_modules/type-fest', '/node_modules/menubar/assets'
+];
+
 function ignore(file) {
     if (!file) return false;
+    if (PRUNED.some(prefix => file === prefix || file.startsWith(prefix + '/'))) return true;
     if (file === '/node_modules' || file.startsWith('/node_modules/')) return false;
     if (file === '/images') return false;
     return !APP_FILES.includes(file);

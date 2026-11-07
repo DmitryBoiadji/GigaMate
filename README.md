@@ -20,7 +20,7 @@ It adjusts brightness, contrast, volume and the KVM switch right from the menu b
 - **Appearance**: Follows the system theme, or force light or dark in Settings.
 - **Settings**: Easy configuration with autosave - changes apply instantly.
 - **Startup**: Option to run at login.
-- **Lightweight**: The popup is unloaded while hidden to keep memory usage low.
+- **Lightweight**: No polling while idle; the popup is unloaded after it has been hidden for 30 seconds.
 
 
 ## Capable models
@@ -34,6 +34,34 @@ It adjusts brightness, contrast, volume and the KVM switch right from the menu b
 
 ## Installation
 
+### Download a release
+
+Get the latest build from the [Releases](https://github.com/DmitryBoiadji/GigaMate/releases/latest) page:
+
+| Platform | File |
+|---|---|
+| macOS, Apple Silicon | `GigaMate-darwin-arm64-<version>.zip` |
+| macOS, Intel | `GigaMate-darwin-x64-<version>.zip` |
+| Windows | `GigaMate-<version>.Setup.exe` |
+| Linux (Debian, Ubuntu) | `gigamate_<version>_amd64.deb` |
+| Linux (Fedora, RHEL) | `GigaMate-<version>-1.x86_64.rpm` |
+| Linux (other) | `GigaMate-linux-x64-<version>.zip` |
+
+**macOS**: unzip and move `GigaMate.app` to `/Applications`. The builds are not signed, so macOS may say "GigaMate is damaged and can't be opened". Clear the quarantine flag once:
+```bash
+xattr -c /Applications/GigaMate.app
+```
+
+**Windows**: run the installer. The builds are not signed, so SmartScreen may warn about an unknown publisher: choose "More info" and "Run anyway".
+
+**Linux**: install the package. Regular users may need a udev rule to access the monitor:
+```bash
+echo 'KERNEL=="hidraw*", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="1100", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/70-gigamate.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+### Build from source
+
 1. **Clone the repository**:
     ```bash
     git clone https://github.com/DmitryBoiadji/GigaMate
@@ -45,9 +73,7 @@ It adjusts brightness, contrast, volume and the KVM switch right from the menu b
     npm install
     ```
 
-3. **Rebuild native modules** (Apple Silicon Macs only):
-
-    If you're using an Intel build of Node.js on an Apple Silicon Mac, rebuild native modules for ARM64:
+3. **Rebuild native modules** (only if you use an Intel build of Node.js on an Apple Silicon Mac):
     ```bash
     npm run rebuild:arm64
     ```
@@ -57,12 +83,10 @@ It adjusts brightness, contrast, volume and the KVM switch right from the menu b
     npm start
     ```
 
-### macOS Gatekeeper
-
-If you download a pre-built release and macOS shows "GigaMate is damaged and can't be opened", run:
-```bash
-xattr -c /Applications/GigaMate.app
-```
+5. **Build installers** for the current platform (output in `out/make`):
+    ```bash
+    npm run make
+    ```
 
 ## Usage
 
@@ -97,14 +121,14 @@ Feel free to fork the repository and submit pull requests. For major changes, pl
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
 
 ## Special thanks
 
-A huge thanks to @kelvie and his [gbmonctl](https://github.com/kelvie/gbmonctl) CLI tool written in Go, which heavily inspired me to start this pet project.  
-I used it for a while with QMK keyboard macros.Initially, I decided to write a simple wrapper around it but ended up rewriting it using the node-hid library.  
-Big thanks to @kelvie for reverse engineering the OSD Sidekick protocol!
+A huge thanks to [kelvie](https://github.com/kelvie) for [gbmonctl](https://github.com/kelvie/gbmonctl), a command-line tool written in Go that inspired this project.
+I used it for a while together with QMK keyboard macros. The plan was to write a simple wrapper around it, but it ended up as a rewrite on top of the node-hid library.
+GigaMate would not exist without kelvie's reverse engineering of the OSD Sidekick protocol - thank you!
 
 
 ## Acknowledgements
