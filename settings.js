@@ -31,13 +31,17 @@ send('get-settings');
 
 on('settings-data', populateForm);
 
-function populateForm(settings) {
+function populateShortcuts(shortcuts) {
     Object.keys(shortcutInputs).forEach(key => {
-        const value = settings.shortcuts[key] || '';
-        shortcutInputs[key].value = formatShortcut(value);
+        const value = shortcuts[key] || '';
         shortcutInputs[key].dataset.value = value;
+        if (shortcutInputs[key] !== recordingInput) shortcutInputs[key].value = formatShortcut(value);
         updateShortcutStyle(shortcutInputs[key]);
     });
+}
+
+function populateForm(settings) {
+    populateShortcuts(settings.shortcuts);
 
     const theme = settings.theme || 'system';
     themeRadios.forEach(radio => { radio.checked = radio.value === theme; });
@@ -72,6 +76,13 @@ function updateShortcutStyle(input) {
     input.parentElement.classList.toggle('empty', !input.dataset.value);
 }
 
+// Marks recorders whose shortcut is taken by another app
+function markFailedShortcuts(failed) {
+    Object.keys(shortcutInputs).forEach(key => {
+        shortcutInputs[key].parentElement.classList.toggle('failed', failed.includes(key));
+    });
+}
+
 // Physical key (KeyboardEvent.code) -> Electron accelerator key.
 // Uses the physical key so Option+letter on macOS does not produce characters like "å" or "Dead".
 const CODE_KEYS = {
@@ -90,9 +101,14 @@ function acceleratorKey(code) {
     return CODE_KEYS[code] || null;
 }
 
-// Shortcut recording
+// Shortcut recording: start by click, or by Enter/Space for keyboard users
 Object.keys(shortcutInputs).forEach(key => {
     shortcutInputs[key].addEventListener('click', function() {
+        if (recordingInput !== this) startRecording(this);
+    });
+    shortcutInputs[key].addEventListener('keydown', function(e) {
+        if (recordingInput || (e.code !== 'Enter' && e.code !== 'Space')) return;
+        e.preventDefault();
         startRecording(this);
     });
 });
@@ -101,6 +117,7 @@ function stopRecording() {
     recordingInput.parentElement.classList.remove('recording');
     recordingInput.value = formatShortcut(recordingInput.dataset.value);
     recordingInput = null;
+    send('resume-shortcuts');
 }
 
 function startRecording(input) {
@@ -109,10 +126,17 @@ function startRecording(input) {
     recordingInput = input;
     input.parentElement.classList.add('recording');
     input.value = 'Type Shortcut';
+    // Otherwise a combination that is already registered never reaches this window
+    send('pause-shortcuts');
 }
 
 document.addEventListener('keydown', (e) => {
     if (!recordingInput) return;
+    // Let Tab move focus away instead of being swallowed by the recorder
+    if (e.code === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        stopRecording();
+        return;
+    }
 
     e.preventDefault();
     e.stopPropagation();
@@ -130,8 +154,10 @@ document.addEventListener('keydown', (e) => {
     if (isMac) {
         if (e.metaKey) modifiers.push('Command');
         if (e.ctrlKey) modifiers.push('Control');
-    } else if (e.ctrlKey) {
-        modifiers.push('CommandOrControl');
+    } else {
+        if (e.ctrlKey) modifiers.push('CommandOrControl');
+        // Windows/Super key; dropping it silently would record a different shortcut
+        if (e.metaKey) modifiers.push('Super');
     }
     if (e.altKey) modifiers.push('Alt');
     if (e.shiftKey) modifiers.push('Shift');
@@ -144,7 +170,15 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    recordingInput.dataset.value = [...modifiers, key].join('+');
+    const accelerator = [...modifiers, key].join('+');
+    const owner = Object.keys(shortcutInputs).find(name =>
+        shortcutInputs[name] !== recordingInput && shortcutInputs[name].dataset.value === accelerator);
+    if (owner) {
+        recordingInput.value = 'Already in use';
+        return;
+    }
+
+    recordingInput.dataset.value = accelerator;
     updateShortcutStyle(recordingInput);
     stopRecording();
     autoSave();
@@ -185,9 +219,12 @@ function showSaveIndicator(text, className) {
     }
 }
 
+// Clamps the field and writes the value back, so what is shown is what gets saved
 function percent(input, fallback) {
     const n = parseInt(input.value, 10);
-    return Number.isNaN(n) ? fallback : Math.min(100, Math.max(0, n));
+    const value = Number.isNaN(n) ? fallback : Math.min(100, Math.max(0, n));
+    if (String(value) !== input.value) input.value = value;
+    return value;
 }
 
 function collectSettings() {
@@ -211,20 +248,40 @@ function collectSettings() {
     return settings;
 }
 
+function saveNow() {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+    send('save-settings', collectSettings());
+}
+
 function autoSave() {
     showSaveIndicator('Saving…', 'saving');
     clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => send('save-settings', collectSettings()), 300);
+    saveTimeout = setTimeout(saveNow, 300);
 }
 
-// Add change listeners for autosave
+// Closing the window right after a change must not lose it
+window.addEventListener('beforeunload', () => {
+    if (saveTimeout) saveNow();
+});
+
+// Add change listeners for autosave. Number fields save on change (blur or Enter), not on every keystroke.
 themeRadios.forEach(radio => radio.addEventListener('change', autoSave));
 elements.openAtLogin.addEventListener('change', autoSave);
 [elements.defaultBrightness, elements.defaultContrast, elements.defaultVolume].forEach(input => {
     input.addEventListener('change', autoSave);
-    input.addEventListener('input', autoSave);
 });
 
-on('settings-saved', () => {
-    showSaveIndicator('Saved', 'saved');
+// Main may adjust what was sent (duplicate shortcuts dropped, autostart unavailable), so show its result
+on('settings-saved', ({settings, failedShortcuts}) => {
+    populateShortcuts(settings.shortcuts);
+    elements.openAtLogin.checked = settings.startup.openAtLogin;
+    markFailedShortcuts(failedShortcuts);
+    if (failedShortcuts.length) {
+        showSaveIndicator('Saved, but a shortcut is used by another app', 'error');
+    } else {
+        showSaveIndicator('Saved', 'saved');
+    }
 });
+
+on('shortcuts-status', markFailedShortcuts);

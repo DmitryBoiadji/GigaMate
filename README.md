@@ -1,9 +1,7 @@
 # GigaMate
 
-This pet project is a tray utility for macOS built with [Electron](https://www.electronjs.org/), designed to control capable Gigabyte monitors.  
-It adjusts brightness, contrast, volume and the KVM switch right from the menu bar, with a native macOS look.
-
-![ProjectImage](images/readme_icon.png)
+This pet project is a tray utility for macOS, Windows and Linux built with [Electron](https://www.electronjs.org/), designed to control capable Gigabyte monitors.  
+It adjusts brightness, contrast, volume and the KVM switch right from the menu bar or system tray, with a native macOS look.
 
 ## Features
 
@@ -75,15 +73,19 @@ Default shortcuts (configurable in Settings):
 - **Volume Up/Down**: Not set by default
 - **KVM Switch**: `Cmd/Ctrl+Alt+K`
 
+Global shortcuts are paused while you record a new one in Settings. If a shortcut is already used by another app, it is marked red in Settings.
+
+The KVM switch toggles between the two inputs based on the last switch made by GigaMate: the monitor does not report its active input, so after switching from the monitor's own menu the first press may do nothing.
+
+**Default Values** are the starting brightness, contrast and volume used by the shortcuts until the first change is made from GigaMate.
+
 ### Tray Menu
 
+Right-click the tray icon (on Linux, click it) to open the menu:
+
+- **Open Controls** (Linux only): Open the popup.
 - **Settings**: Open the settings window.
 - **Quit**: Exit the application.
-
-
-## TO-DO
-
-Add issues with links
 
 
 ## Contributing

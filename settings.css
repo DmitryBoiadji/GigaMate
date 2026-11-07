@@ -123,6 +123,16 @@ body {
     border-color: AccentColor;
 }
 
+.recorder:not(.recording) .shortcut-input:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, AccentColor 40%, transparent);
+}
+
+/* The shortcut is taken by another app */
+.recorder.failed .shortcut-input {
+    border-color: #ff3b30;
+    color: #ff3b30;
+}
+
 .clear-btn {
     position: absolute;
     right: 5px;
@@ -267,4 +277,8 @@ body {
 
 .save-indicator.saved {
     color: AccentColor;
+}
+
+.save-indicator.error {
+    color: #ff3b30;
 }

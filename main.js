@@ -1,4 +1,23 @@
-const {app, Menu, ipcMain, globalShortcut, Notification, BrowserWindow, nativeTheme} = require('electron');
+const {app, Menu, ipcMain, globalShortcut, Notification, BrowserWindow, nativeTheme, session} = require('electron');
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
+
+// Squirrel installs into versioned folders, so Windows autostart goes through the stable Update.exe
+function windowsLoginItem(enabled) {
+    const settings = {openAtLogin: enabled};
+    const updateExe = path.resolve(path.dirname(process.execPath), '..', 'Update.exe');
+    if (fs.existsSync(updateExe)) {
+        settings.path = updateExe;
+        settings.args = ['--processStart', `"${path.basename(process.execPath)}"`];
+    }
+    return settings;
+}
+
+// Do not leave a Run registry entry pointing at a removed app
+if (process.platform === 'win32' && process.argv.includes('--squirrel-uninstall')) {
+    app.setLoginItemSettings(windowsLoginItem(false));
+}
 
 // Windows Squirrel install/update events and duplicate launches must exit before creating anything
 if (require('electron-squirrel-startup') || !app.requestSingleInstanceLock()) {
@@ -9,9 +28,6 @@ if (require('electron-squirrel-startup') || !app.requestSingleInstanceLock()) {
 const {menubar} = require('menubar');
 const {default: Store} = require('electron-store');
 const HID = require('node-hid');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
 
 const store = new Store();
 const isMac = process.platform === 'darwin';
@@ -33,6 +49,12 @@ app.on('window-all-closed', () => {});
 app.on('web-contents-created', (event, contents) => {
     contents.on('will-navigate', e => e.preventDefault());
     contents.setWindowOpenHandler(() => ({action: 'deny'}));
+});
+
+// The UI needs no browser permissions (camera, notifications, HID from the web, etc.)
+app.whenReady().then(() => {
+    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => callback(false));
+    session.defaultSession.setPermissionCheckHandler(() => false);
 });
 
 const secureWebPreferences = {
@@ -73,15 +95,34 @@ function clampPercent(value, fallback) {
     return Number.isNaN(n) ? fallback : Math.min(100, Math.max(0, n));
 }
 
+const MAX_ACCELERATOR_LENGTH = 64;
+const MODIFIERS = ['Command', 'Cmd', 'Control', 'Ctrl', 'CommandOrControl', 'CmdOrCtrl', 'Alt', 'Option', 'AltGr', 'Shift', 'Super', 'Meta'];
+
+// A global shortcut without a modifier (other than Shift) would steal that key system-wide; allow it only for F-keys.
+// Mirrors the rule in the settings recorder so a hand-edited store or a bad renderer cannot bypass it.
+function isAllowedAccelerator(value) {
+    if (typeof value !== 'string' || !value || value.length > MAX_ACCELERATOR_LENGTH) return false;
+    const parts = value.split('+');
+    const key = parts.pop();
+    if (!key || !parts.every(part => MODIFIERS.includes(part))) return false;
+    const hasModifier = parts.some(part => part !== 'Shift');
+    return hasModifier || /^F([1-9]|1[0-9]|2[0-4])$/.test(key);
+}
+
 // Fills in missing keys (including nested ones added by newer versions) and drops invalid values.
 // Used both for stored settings and for anything a renderer sends.
 function sanitizeSettings(input) {
     const saved = input && typeof input === 'object' ? input : {};
     const settings = {shortcuts: {}, startup: {}, defaults: {}, theme: 'system'};
 
+    const used = new Set();
     for (const [name, fallback] of Object.entries(defaultSettings.shortcuts)) {
-        const value = saved.shortcuts && saved.shortcuts[name];
-        settings.shortcuts[name] = typeof value === 'string' ? value : fallback;
+        let value = saved.shortcuts && saved.shortcuts[name];
+        if (typeof value !== 'string') value = fallback;
+        // Invalid or duplicate accelerators are dropped: only one action can own a key combination
+        if (value && (!isAllowedAccelerator(value) || used.has(value))) value = '';
+        if (value) used.add(value);
+        settings.shortcuts[name] = value;
     }
     settings.startup.openAtLogin = Boolean(saved.startup && saved.startup.openAtLogin);
     for (const [name, fallback] of Object.entries(defaultSettings.defaults)) {
@@ -147,7 +188,7 @@ function setLaunchAgent(enabled) {
     try {
         if (!enabled) {
             if (fs.existsSync(plistPath)) fs.unlinkSync(plistPath);
-            return;
+            return true;
         }
 
         const appPath = app.isPackaged
@@ -173,8 +214,10 @@ function setLaunchAgent(enabled) {
 
         fs.mkdirSync(path.dirname(plistPath), {recursive: true});
         fs.writeFileSync(plistPath, plistContent);
+        return true;
     } catch (error) {
         console.error('Failed to update Launch Agent:', error);
+        return false;
     }
 }
 
@@ -186,12 +229,16 @@ function setLinuxAutostart(enabled) {
     try {
         if (!enabled) {
             if (fs.existsSync(desktopPath)) fs.unlinkSync(desktopPath);
-            return;
+            return true;
         }
 
         // AppImage builds must be relaunched through the AppImage file, not the extracted binary
         const execPath = process.env.APPIMAGE || process.execPath;
-        const quoted = '"' + execPath.replace(/(["`$\\])/g, '\\$1') + '"';
+        if (/[\r\n]/.test(execPath)) throw new Error('executable path contains a line break');
+        // Desktop Entry spec: quote the argument, then escape it again as a string value, and escape field codes
+        const quoted = ('"' + execPath.replace(/(["`$\\])/g, '\\$1') + '"')
+            .replace(/\\/g, '\\\\')
+            .replace(/%/g, '%%');
         fs.mkdirSync(path.dirname(desktopPath), {recursive: true});
         fs.writeFileSync(desktopPath, [
             '[Desktop Entry]',
@@ -201,23 +248,29 @@ function setLinuxAutostart(enabled) {
             'X-GNOME-Autostart-enabled=true',
             ''
         ].join('\n'));
+        return true;
     } catch (error) {
         console.error('Failed to update autostart entry:', error);
+        return false;
     }
 }
 
+// Returns true when the requested state was applied
 function setAutostart(enabled) {
+    // A dev build or a macOS App Translocation copy runs from a path that will not exist at the next login
+    if (enabled && (!app.isPackaged || app.getPath('exe').includes('/AppTranslocation/'))) {
+        console.error('Autostart is only available for an installed app');
+        return false;
+    }
     if (isMac) return setLaunchAgent(enabled);
     if (process.platform === 'linux') return setLinuxAutostart(enabled);
-
-    // Windows: Squirrel installs into versioned folders, so start through the stable Update.exe
-    const loginSettings = {openAtLogin: enabled};
-    const updateExe = path.resolve(path.dirname(process.execPath), '..', 'Update.exe');
-    if (fs.existsSync(updateExe)) {
-        loginSettings.path = updateExe;
-        loginSettings.args = ['--processStart', `"${path.basename(process.execPath)}"`];
+    try {
+        app.setLoginItemSettings(windowsLoginItem(enabled));
+        return true;
+    } catch (error) {
+        console.error('Failed to update login item:', error);
+        return false;
     }
-    app.setLoginItemSettings(loginSettings);
 }
 
 // ---------------------------------------------------------------------------
@@ -225,6 +278,7 @@ function setAutostart(enabled) {
 // ---------------------------------------------------------------------------
 
 let settingsWindow = null;
+let shortcutsPaused = false;
 
 function openSettingsWindow() {
     if (settingsWindow) {
@@ -273,10 +327,15 @@ function openSettingsWindow() {
 
     settingsWindow.on('closed', () => {
         settingsWindow = null;
+        shortcutsPaused = false;
+        // Recording pauses global shortcuts; never leave them off after the window is gone
+        registerShortcuts();
     });
 }
 
 const contextMenu = Menu.buildFromTemplate([
+    // Linux AppIndicator trays often deliver no click events, so the menu is the only way in
+    ...(process.platform === 'linux' ? [{label: 'Open Controls', click: () => showPopup()}] : []),
     {label: 'Settings…', type: 'normal', click: openSettingsWindow},
     {type: 'separator'},
     {label: 'Quit', type: 'normal', click: () => app.quit()}
@@ -304,6 +363,27 @@ if (debug) {
     mb.on('after-create-window', () => mb.window.webContents.openDevTools());
 }
 
+let menubarReady = false;
+
+function showPopup() {
+    if (!menubarReady) return;
+    mb.showWindow().catch(error => console.error('Failed to show popup:', error));
+}
+
+// Keeps an open popup in sync after a change made by a global shortcut
+function sendValuesToPopup() {
+    if (mb.window && !mb.window.isDestroyed()) mb.window.webContents.send('init-values', currentValues());
+}
+
+function currentValues() {
+    return {
+        brightness: getValue('brightness'),
+        contrast: getValue('contrast'),
+        volume: getValue('volume'),
+        kvm: getValue('kvm')
+    };
+}
+
 function showNotification(titleText, bodyText) {
     new Notification({title: titleText, body: bodyText}).show();
 }
@@ -314,6 +394,7 @@ function showNotification(titleText, bodyText) {
 
 const MONITOR = {vendorId: 0x0bda, productId: 0x1100};
 const RECONNECT_DELAY_MS = 3000;
+const MAX_RECONNECT_DELAY_MS = 60000;
 const NOTIFICATION_INTERVAL_MS = 30000;
 
 const properties = {
@@ -331,6 +412,7 @@ const properties = {
 
 let dev = null;
 let reconnectTimer = null;
+let reconnectDelay = RECONNECT_DELAY_MS;
 let lastNotificationAt = 0;
 
 function closeDevice() {
@@ -343,28 +425,47 @@ function closeDevice() {
     dev = null;
 }
 
-// Only one reconnect loop may run at a time
+// Only one reconnect loop may run at a time. The delay backs off so an absent monitor
+// does not mean a USB enumeration every few seconds forever.
 function scheduleReconnect() {
-    if (!reconnectTimer) reconnectTimer = setTimeout(connectToDevice, RECONNECT_DELAY_MS);
+    if (reconnectTimer) return;
+    reconnectTimer = setTimeout(connectToDevice, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY_MS);
 }
 
-function connectToDevice() {
+function cancelReconnect() {
+    clearTimeout(reconnectTimer);
     reconnectTimer = null;
+}
+
+// Opens the monitor right now; returns true on success
+function openDevice() {
     try {
         const info = HID.devices().find(d => d.vendorId === MONITOR.vendorId && d.productId === MONITOR.productId);
         if (!info) throw new Error('monitor not found');
         closeDevice();
         dev = new HID.HID(info.path);
+        cancelReconnect();
+        reconnectDelay = RECONNECT_DELAY_MS;
         console.log('Monitor connected');
+        return true;
     } catch (error) {
         closeDevice();
         console.error('Error connecting to device:', error.message);
-        scheduleReconnect();
+        return false;
     }
+}
+
+function connectToDevice() {
+    reconnectTimer = null;
+    if (!openDevice()) scheduleReconnect();
 }
 
 function handleDisconnect() {
     closeDevice();
+    // A user action should not wait for a long backoff: restart the loop at the short delay
+    cancelReconnect();
+    reconnectDelay = RECONNECT_DELAY_MS;
     scheduleReconnect();
     const now = Date.now();
     if (now - lastNotificationAt >= NOTIFICATION_INTERVAL_MS) {
@@ -379,7 +480,8 @@ function setProperty(propName, value) {
         return false;
     }
 
-    if (!dev) {
+    // The user is acting now, so try to connect immediately instead of waiting for the reconnect loop
+    if (!dev && !openDevice()) {
         handleDisconnect();
         return false;
     }
@@ -402,9 +504,16 @@ function setProperty(propName, value) {
     try {
         dev.write(buf);
     } catch (error) {
-        console.error('HID write failed:', error.message);
-        handleDisconnect();
-        return false;
+        // A stale handle (monitor power-cycled or replugged): reopen once and retry so the action is not lost
+        console.error('HID write failed, reconnecting:', error.message);
+        try {
+            if (!openDevice()) throw error;
+            dev.write(buf);
+        } catch (retryError) {
+            console.error('HID write failed:', retryError.message);
+            handleDisconnect();
+            return false;
+        }
     }
 
     if (STATE_KEYS[propName]) setValue(STATE_KEYS[propName], value);
@@ -420,19 +529,33 @@ function stepProperty(name, delta) {
     setProperty(name, Math.min(100, Math.max(0, getValue(name) + delta)));
 }
 
+// The monitor cannot report the active input, so the toggle is based on the last value this app wrote
+function toggleKvm() {
+    return setProperty('kvm-switch', getValue('kvm') === 0 ? 1 : 0);
+}
+
+function withPopupSync(action) {
+    return () => {
+        action();
+        sendValuesToPopup();
+    };
+}
+
 const SHORTCUT_ACTIONS = {
-    brightnessUp: () => stepProperty('brightness', 10),
-    brightnessDown: () => stepProperty('brightness', -10),
-    contrastUp: () => stepProperty('contrast', 10),
-    contrastDown: () => stepProperty('contrast', -10),
-    volumeUp: () => stepProperty('volume', 10),
-    volumeDown: () => stepProperty('volume', -10),
-    kvmSwitch: () => setProperty('kvm-switch', getValue('kvm') === 0 ? 1 : 0)
+    brightnessUp: withPopupSync(() => stepProperty('brightness', 10)),
+    brightnessDown: withPopupSync(() => stepProperty('brightness', -10)),
+    contrastUp: withPopupSync(() => stepProperty('contrast', 10)),
+    contrastDown: withPopupSync(() => stepProperty('contrast', -10)),
+    volumeUp: withPopupSync(() => stepProperty('volume', 10)),
+    volumeDown: withPopupSync(() => stepProperty('volume', -10)),
+    kvmSwitch: withPopupSync(toggleKvm)
 };
 
+// Returns the names of shortcuts that could not be registered (taken by another app or invalid)
 function registerShortcuts() {
     globalShortcut.unregisterAll();
     const {shortcuts} = getSettings();
+    const failed = [];
 
     for (const [name, action] of Object.entries(SHORTCUT_ACTIONS)) {
         const accelerator = shortcuts[name];
@@ -446,64 +569,104 @@ function registerShortcuts() {
             console.error(`Invalid shortcut ${name} (${accelerator}):`, error.message);
         }
         console.log(`Shortcut ${name} (${accelerator}): ${registered ? 'registered' : 'FAILED'}`);
+        if (!registered) failed.push(name);
     }
+    return failed;
 }
 
 // ---------------------------------------------------------------------------
 // App lifecycle and IPC
 // ---------------------------------------------------------------------------
 
-app.on('second-instance', () => mb.showWindow());
+app.on('second-instance', showPopup);
+
+app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
+    cancelReconnect();
+    closeDevice();
+});
+
+// IPC is accepted only from the window that owns the channel
+function fromPopup(event) {
+    return Boolean(mb.window && !mb.window.isDestroyed() && event.sender === mb.window.webContents);
+}
+
+function fromSettings(event) {
+    return Boolean(settingsWindow && event.sender === settingsWindow.webContents);
+}
 
 mb.on('ready', () => {
+    menubarReady = true;
+
     // Monitor controls from the popup
     for (const name of ['brightness', 'contrast', 'volume']) {
-        ipcMain.on(`${name}-change`, (event, value) => setProperty(name, value));
+        ipcMain.on(`${name}-change`, (event, value) => {
+            if (fromPopup(event)) setProperty(name, value);
+        });
     }
 
-    ipcMain.on('kvm-switch-change', (event, value) => {
-        if (value === 0 || value === 1) setProperty('kvm-switch', value);
+    ipcMain.on('kvm-toggle', (event) => {
+        if (fromPopup(event)) toggleKvm();
     });
 
     ipcMain.on('request-values', (event) => {
-        event.reply('init-values', {
-            brightness: getValue('brightness'),
-            contrast: getValue('contrast'),
-            volume: getValue('volume'),
-            kvm: getValue('kvm')
-        });
+        if (fromPopup(event)) event.reply('init-values', currentValues());
+    });
+
+    ipcMain.on('open-settings', (event) => {
+        if (fromPopup(event)) openSettingsWindow();
     });
 
     // Settings window
     ipcMain.on('get-settings', (event) => {
-        event.reply('settings-data', getSettings());
+        if (fromSettings(event)) event.reply('settings-data', getSettings());
     });
 
     ipcMain.on('save-settings', (event, input) => {
+        if (!fromSettings(event)) return;
         const oldSettings = getSettings();
         const newSettings = sanitizeSettings(input);
+
+        if (oldSettings.startup.openAtLogin !== newSettings.startup.openAtLogin
+            && !setAutostart(newSettings.startup.openAtLogin)) {
+            // Store what actually took effect so the switch does not lie
+            newSettings.startup.openAtLogin = oldSettings.startup.openAtLogin;
+        }
         store.set('settings', newSettings);
-
-        if (oldSettings.startup.openAtLogin !== newSettings.startup.openAtLogin) {
-            setAutostart(newSettings.startup.openAtLogin);
-        }
         applyTheme(newSettings.theme);
-        if (JSON.stringify(oldSettings.shortcuts) !== JSON.stringify(newSettings.shortcuts)) {
-            registerShortcuts();
-        }
 
-        event.reply('settings-saved');
+        // Shortcuts are paused while the settings window records one; they come back on resume-shortcuts
+        const failedShortcuts = shortcutsPaused ? [] : registerShortcuts();
+        event.reply('settings-saved', {settings: newSettings, failedShortcuts});
     });
 
-    ipcMain.on('open-settings', openSettingsWindow);
-
-    mb.tray.on('right-click', () => {
-        mb.tray.popUpContextMenu(contextMenu);
+    // A registered global shortcut is swallowed by the OS before the recorder sees the keypress
+    ipcMain.on('pause-shortcuts', (event) => {
+        if (!fromSettings(event)) return;
+        shortcutsPaused = true;
+        globalShortcut.unregisterAll();
     });
 
-    // Free the renderer while the popup is hidden; menubar recreates it on the next click
+    ipcMain.on('resume-shortcuts', (event) => {
+        if (!fromSettings(event)) return;
+        shortcutsPaused = false;
+        event.reply('shortcuts-status', registerShortcuts());
+    });
+
+    if (process.platform === 'linux') {
+        mb.tray.setContextMenu(contextMenu);
+    } else {
+        mb.tray.on('right-click', () => {
+            mb.tray.popUpContextMenu(contextMenu);
+        });
+    }
+
+    // Free the renderer while the popup is hidden; menubar recreates it on the next click.
+    // Deferred: menubar emits after-hide before it marks the window hidden, and a quick re-click may show it again.
     mb.on('after-hide', () => {
-        if (mb.window) mb.window.close();
+        setImmediate(() => {
+            if (mb.window && !mb.window.isDestroyed() && !mb.window.isVisible()) mb.window.close();
+        });
     });
 
     const settings = getSettings();

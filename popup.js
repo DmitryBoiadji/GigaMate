@@ -13,7 +13,6 @@ names.forEach(name => {
 });
 
 const kvmSwitch = document.getElementById('kvm-switch');
-let currentKvm = 0;
 
 // The filled part of the track is drawn from this CSS variable
 function render(name, value) {
@@ -52,16 +51,15 @@ names.forEach(name => {
     });
 });
 
+// Main owns the KVM state, so the popup cannot drift from shortcut presses or failed writes
 kvmSwitch.addEventListener('click', () => {
-    currentKvm = currentKvm === 0 ? 1 : 0;
-    send('kvm-switch-change', currentKvm);
+    send('kvm-toggle');
 });
 
 on('init-values', data => {
     names.forEach(name => {
-        if (data[name] !== undefined) render(name, data[name]);
+        if (Number.isInteger(data[name])) render(name, data[name]);
     });
-    if (data.kvm !== undefined) currentKvm = data.kvm;
 });
 
 send('request-values');

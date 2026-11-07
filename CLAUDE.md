@@ -32,6 +32,7 @@ The application consists of two Electron processes:
 
 **Renderers (index.html + popup.js, settings.html + settings.js):**
 - Sandboxed with `contextIsolation`; they talk to main only through `preload.js` (`window.gigamate.send/on` with a channel allowlist)
+- Main also checks the sender of every IPC message (`fromPopup` / `fromSettings`), so each channel only works from its own window
 - Strict CSP (`script-src 'self'`): no inline scripts
 - macOS look: vibrancy backgrounds, styles follow `prefers-color-scheme`; solid fallback background on Windows/Linux
 
@@ -39,6 +40,7 @@ The application consists of two Electron processes:
 - Electron Forge handles packaging for macOS, Linux (DEB/RPM), and Windows (Squirrel)
 - GitHub publisher integration for releases
 - Electron Fuses enabled for security hardening
+- `packagerConfig.ignore` is an allowlist (`APP_FILES`): add new runtime files there, everything else (e.g. `.env`) stays out of the asar
 
 ## HID Protocol
 
